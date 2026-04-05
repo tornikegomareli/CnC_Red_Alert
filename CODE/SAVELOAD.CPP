@@ -189,7 +189,8 @@ static void Put_All(Pipe & pipe, int save_net)
 
 	int count = MapTriggers.Count();
 	pipe.Put(&count, sizeof(count));
-	for (int index = 0; index < MapTriggers.Count(); index++) {
+	int index;
+	for (index = 0; index < MapTriggers.Count(); index++) {
 		TARGET target = MapTriggers[index]->As_Target();
 		pipe.Put(&target, sizeof(target));
 	}
@@ -680,7 +681,8 @@ bool Load_Game(int id)
 	int count;
 	straw.Get(&count, sizeof(count));
 	MapTriggers.Clear();
-	for (int index = 0; index < count; index++) {
+	int index;
+	for (index = 0; index < count; index++) {
 		TARGET target;
 		straw.Get(&target, sizeof(target));
 		MapTriggers.Add(As_Trigger(target));

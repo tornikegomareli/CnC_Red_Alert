@@ -903,7 +903,8 @@ int MapClass::Write_Binary(Pipe & pipe)
 	comp.Put_To(&pipe);
 
 	CellClass * cellptr = &Array[0];
-	for (int i = 0; i < MAP_CELL_TOTAL; i++) {
+	int i;
+	for (i = 0; i < MAP_CELL_TOTAL; i++) {
 		total += comp.Put(&cellptr->TType, sizeof(cellptr->TType));
 		cellptr++;
 	}
@@ -1016,7 +1017,8 @@ void MapClass::Logic(void)
 	*/
 	int subcount = MAP_CELL_TOTAL / (Rule.GrowthRate * TICKS_PER_MINUTE);
 	subcount = max(subcount, 1);
-	for (int index = TiberiumScan; index < MAP_CELL_TOTAL; index++) {
+	int index;
+	for (index = TiberiumScan; index < MAP_CELL_TOTAL; index++) {
 		CELL cell = index;
 		if (In_Radar(cell)) {
 			CellClass * ptr = &(*this)[cell];
@@ -1605,7 +1607,8 @@ int MapClass::Zone_Span(CELL cell, int zone, MZoneType check)
 	**	At this point we know the bounds of the current span. Fill in the zone values
 	**	for the entire span.
 	*/
-	for (int x = xbegin; x <= xend; x++) {
+	int x;
+	for (x = xbegin; x <= xend; x++) {
 		(*this)[XY_Cell(x, y)].Zones[check] = zone;
 		filled++;
 	}

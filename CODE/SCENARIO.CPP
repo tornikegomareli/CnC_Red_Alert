@@ -524,7 +524,8 @@ void Fill_In_Data(void)
 	*/
 	ScenarioInit++;
 
-	for (int index = 0; index < Buildings.Count(); index++) {
+	int index;
+	for (index = 0; index < Buildings.Count(); index++) {
 		Buildings.Ptr(index)->Update_Buildables();
 	}
 

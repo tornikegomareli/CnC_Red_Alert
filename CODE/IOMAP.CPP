@@ -334,7 +334,8 @@ bool MouseClass::Save(Pipe & file) const
 	*/
 	int count = 0;
 	CellClass const * cellptr = &(*this)[(CELL)0];
-	for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+	CELL cell;
+	for (cell = 0; cell < MAP_CELL_TOTAL; cell++) {
 		if (cellptr->Should_Save()) {
 			count++;
 		}

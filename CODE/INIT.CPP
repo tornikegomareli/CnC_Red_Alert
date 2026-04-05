@@ -2219,7 +2219,8 @@ long Obfuscate(char const * string)
 	**	Ensure that only visible ASCII characters compose the key phrase. This
 	**	discourages the direct forced illegal character input method of attack.
 	*/
-	for (int index = 0; index < length; index++) {
+	int index;
+	for (index = 0; index < length; index++) {
 		if (!isgraph(buffer[index])) {
 			buffer[index] = 'A' + (index%26);
 		}
@@ -2565,7 +2566,8 @@ static void Init_Color_Remaps(void)
 			ptr[color] = color;
 		}
 
-		for (int index = 0; index < 16; index++) {
+		int index;
+		for (index = 0; index < 16; index++) {
 			ptr[HidPage.Get_Pixel(index, 0)] = HidPage.Get_Pixel(index, pcolor);
 		}
 		for (index = 0; index < 6; index++) {

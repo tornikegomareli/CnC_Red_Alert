@@ -584,7 +584,8 @@ void LoadOptionsClass::Clear_List(ListClass * list)
 	** For every item in the list, free its buffer & remove it from the list.
 	*/
 	int j = list->Count();
-	for (int i = 0; i < j; i++) {
+	int i;
+	for (i = 0; i < j; i++) {
 		list->Remove_Item(list->Get_Item(0));
 	}
 
@@ -702,7 +703,8 @@ void LoadOptionsClass::Fill_List(ListClass * list)
 		** in the list; if any number isn't found, use that number; otherwise,
 		** use 'N + 1'.
 		*/
-		for (int i = 0; i < Files.Count(); i++) {		// i = the # we're searching for
+		int i;
+		for (i = 0; i < Files.Count(); i++) {		// i = the # we're searching for
 			id = -1;											// mark as 'not found'
 			for (int j = 0; j < Files.Count(); j++) {	// loop through all game ID's
 				if (Files[j]->Num==i) {					// if found, mark as found

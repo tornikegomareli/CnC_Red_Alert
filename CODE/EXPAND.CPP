@@ -181,16 +181,16 @@ const char* XlatNames[] = {
 	"Harte Verhandlungen",			  //	"SCG47EA",		// Negotiations
 	"Ferngelenktes Kriegsspielzeug",//	"SCG45EA",		// Monster Tank Madness
 	"Licht aus",						  //	"SCG44EA",		// Time Flies
-	"Molekulare Kriegsfhrung",	  //	"SCG48EA",		// Absolut MADness
+	"Molekulare Kriegsfï¿½hrung",	  //	"SCG48EA",		// Absolut MADness
 	"Bauernopfer",						  //	"SCG46EA",		// Pawn
 
-	"Testgel„nde",						  //	"SCU43EA",		// Testing Grounds
+	"Testgelï¿½nde",						  //	"SCU43EA",		// Testing Grounds
 	"Schocktherapie",					  //	"SCU40EA",		// Shock Therapy
 	"Der Letzte seiner Art",		  //	"SCU42EA",		// Let's Make a Steal
 	"Probefahrt",						  //	"SCU41EA",		// Test Drive
 	"Schlaftrunk",						  //	"SCU45EA",		// Don't Drink The Water
-	"Der jngste Tag",				  //	"SCU44EA",		// Situation Critical
-	"Waffenbrder",					  //	"SCU46EA",		// Brothers in Arms
+	"Der jï¿½ngste Tag",				  //	"SCU44EA",		// Situation Critical
+	"Waffenbrï¿½der",					  //	"SCU46EA",		// Brothers in Arms
 	"Deus Ex Machina",				  //	"SCU47EA",		// Deus Ex Machina
 	"Die Replikanten von Grunyev",  //	"SCU48EA",		// Grunyev Revolution
 
@@ -205,39 +205,39 @@ const char* XlatNames[] = {
 	"Gaz Sarin 1: Ravitaillement Fatal",
 	"Gaz Sarin 2: En Sous-sol",
 	"Gaz Sarin 3: Attaque Chirurgicale",
-	"GrŠce Occup‚e 1: Guerre Priv‚e",
-	"GrŠce Occup‚e 2: Evacuation",
-	"Conflit Sib‚rien 1: Traces FraŒches",
-	"Conflit Sib‚rien 2: Pris au PiŠge",
-	"Conflit Sib‚rien 3: Terres de Glace",
-	"Mise … l'Epreuve",
-	"Assi‚g‚s",
-	"La SouriciŠre",
-	"L'H‚ritage de Tesla",
+	"Grï¿½ce Occupï¿½e 1: Guerre Privï¿½e",
+	"Grï¿½ce Occupï¿½e 2: Evacuation",
+	"Conflit Sibï¿½rien 1: Traces Fraï¿½ches",
+	"Conflit Sibï¿½rien 2: Pris au Piï¿½ge",
+	"Conflit Sibï¿½rien 3: Terres de Glace",
+	"Mise ï¿½ l'Epreuve",
+	"Assiï¿½gï¿½s",
+	"La Souriciï¿½re",
+	"L'Hï¿½ritage de Tesla",
 	"Tandem de Choc",
 	"Jusqu'au Sommet du Monde",
 	"Effets Secondaires",
-	"Intensification nucl‚aire",
+	"Intensification nuclï¿½aire",
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 "Le vieux port",				//	"SCG43EA",		// Harbor Reclamation
-"Juste … temps",				//	"SCG41EA",		// In the nick of time
+"Juste ï¿½ temps",				//	"SCG41EA",		// In the nick of time
 "La main dans le sac",		//	"SCG40EA",		// Caught in the act
 "Production interrompue",	//	"SCG42EA",		// Production Disruption
-"N‚gociations",				//	"SCG47EA",		// Negotiations
+"Nï¿½gociations",				//	"SCG47EA",		// Negotiations
 "Tanks en folie!",			//	"SCG45EA",		// Monster Tank Madness
 "Le temps passe",				//	"SCG44EA",		// Time Flies
-"D‚mence absolue",			//	"SCG48EA",		// Absolut MADness
+"Dï¿½mence absolue",			//	"SCG48EA",		// Absolut MADness
 "Le pion",						//	"SCG46EA",		// Pawn
 
 "Terrains d'essais",			//	"SCU43EA",		// Testing Grounds
-"Th‚rapie de choc",			//	"SCU40EA",		// Shock Therapy
+"Thï¿½rapie de choc",			//	"SCU40EA",		// Shock Therapy
 "Au voleur!",					//	"SCU42EA",		// Let's Make a Steal
 "Essai de conduite",			//	"SCU41EA",		// Test Drive
 "Ne buvez pas la tasse",	//	"SCU45EA",		// Don't Drink The Water
 "Situation critique",		//	"SCU44EA",		// Situation Critical
-"FrŠres d'armes",				//	"SCU46EA",		// Brothers in Arms
+"Frï¿½res d'armes",				//	"SCU46EA",		// Brothers in Arms
 "Deus Ex Machina",			//	"SCU47EA",		// Deus Ex Machina
-"La R‚volution de Grunyev",//	"SCU48EA",		// Grunyev Revolution
+"La Rï¿½volution de Grunyev",//	"SCU48EA",		// Grunyev Revolution
 
 #endif
 
@@ -397,10 +397,11 @@ bool Expansion_Dialog(void)
 	CCFileClass file;
 	char buffer[128], buffer2[128];
 	char * sbuffer = (char*)_ShapeBuffer;
+	int index;
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98 - Though disgusted.
-	for (int index = 20; index < (36+18); index++) {
+	for (index = 20; index < (36+18); index++) {
 #else
-	for (int index = 20; index < 36; index++) {
+	for (index = 20; index < 36; index++) {
 #endif
 
 #ifndef CS_DEBUG

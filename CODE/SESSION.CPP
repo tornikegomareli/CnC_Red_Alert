@@ -811,7 +811,8 @@ void SessionClass::Read_MultiPlayer_Settings (void)
 		}
 
 		int initcount = ini.Entry_Count("InitStrings");
-		for (int index = 0; index < initcount; index++) {
+		int index;
+		for (index = 0; index < initcount; index++) {
 			entry = new char[ INITSTRBUF_MAX ];
 			entry[0] = 0;
 			ini.Get_String("InitStrings", ini.Get_Entry("InitStrings", index), NULL, entry, INITSTRBUF_MAX);

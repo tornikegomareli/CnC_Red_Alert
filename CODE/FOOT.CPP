@@ -1418,7 +1418,8 @@ void FootClass::Per_Cell_Process(PCPType why)
 			*/
 			int x = Cell_X(Coord_Cell(Coord));
 			int y = Cell_Y(Coord_Cell(Coord));
-			for (int index = 0; index < Map.MapCellWidth; index++) {
+			int index;
+			for (index = 0; index < Map.MapCellWidth; index++) {
 				trigger = Map[XY_Cell(index+Map.MapCellX, y)].Trigger;
 				if (trigger != NULL) {
 					if (trigger->Class->Event1.Event == TEVENT_CROSS_HORIZONTAL || (trigger->Class->EventControl != MULTI_ONLY && trigger->Class->Event2.Event == TEVENT_CROSS_HORIZONTAL)) {
