@@ -917,4 +917,196 @@ static inline MCIERROR mciSendCommandA(MCIDEVICEID id, UINT msg, DWORD flags, DW
 // #pragma option is Borland/Watcom — ignore under clang
 #endif
 
+/* Additional types and functions discovered during compilation */
+
+/* GDI types and functions */
+typedef struct tagLOGPALETTE {
+    WORD palVersion;
+    WORD palNumEntries;
+    PALETTEENTRY palPalEntry[1];
+} LOGPALETTE, *LPLOGPALETTE;
+
+typedef struct tagBITMAPCOREHEADER {
+    DWORD bcSize;
+    WORD  bcWidth;
+    WORD  bcHeight;
+    WORD  bcPlanes;
+    WORD  bcBitCount;
+} BITMAPCOREHEADER, *LPBITMAPCOREHEADER;
+
+typedef struct tagBITMAPCOREINFO {
+    BITMAPCOREHEADER bmciHeader;
+    RGBQUAD bmciColors[1];
+} BITMAPCOREINFO, *LPBITMAPCOREINFO;
+
+typedef struct tagBITMAP_S {
+    LONG bmType;
+    LONG bmWidth;
+    LONG bmHeight;
+    LONG bmWidthBytes;
+    WORD bmPlanes;
+    WORD bmBitCount;
+    LPVOID bmBits;
+} BITMAP_S;
+#define BITMAP BITMAP_S
+
+typedef struct tagRGBTRIPLE {
+    BYTE rgbtBlue;
+    BYTE rgbtGreen;
+    BYTE rgbtRed;
+} RGBTRIPLE;
+
+typedef struct _MEMORYSTATUS {
+    DWORD dwLength;
+    DWORD dwMemoryLoad;
+    DWORD dwTotalPhys;
+    DWORD dwAvailPhys;
+    DWORD dwTotalPageFile;
+    DWORD dwAvailPageFile;
+    DWORD dwTotalVirtual;
+    DWORD dwAvailVirtual;
+} MEMORYSTATUS, *LPMEMORYSTATUS;
+
+typedef struct _STARTUPINFOA {
+    DWORD cb;
+    LPSTR lpTitle;
+    DWORD dwFlags;
+    WORD wShowWindow;
+} STARTUPINFOA;
+#define STARTUPINFO STARTUPINFOA
+
+typedef struct _PROCESS_INFORMATION {
+    HANDLE hProcess;
+    HANDLE hThread;
+    DWORD dwProcessId;
+    DWORD dwThreadId;
+} PROCESS_INFORMATION, *LPPROCESS_INFORMATION;
+
+typedef struct tagPAINTSTRUCT {
+    HDC hdc;
+    BOOL fErase;
+    RECT rcPaint;
+    BOOL fRestore;
+    BOOL fIncUpdate;
+    BYTE rgbReserved[32];
+} PAINTSTRUCT, *LPPAINTSTRUCT;
+
+typedef struct _SYSTEMTIME {
+    WORD wYear, wMonth, wDayOfWeek, wDay;
+    WORD wHour, wMinute, wSecond, wMilliseconds;
+} SYSTEMTIME, *LPSYSTEMTIME;
+
+typedef struct _OFSTRUCT {
+    BYTE cBytes;
+    BYTE fFixedDisk;
+    WORD nErrCode;
+    char szPathName[128];
+} OFSTRUCT, *LPOFSTRUCT;
+
+typedef struct _find_t {
+    char name[260];
+    unsigned attrib;
+    unsigned long size;
+} find_t;
+
+typedef BOOL (CALLBACK *DLGPROC)(HWND, UINT, WPARAM, LPARAM);
+typedef DWORD (CALLBACK *LPTHREAD_START_ROUTINE)(LPVOID);
+typedef void *LPSECURITY_ATTRIBUTES;
+typedef unsigned char *PBYTE;
+typedef void *LPSOCKADDR;
+
+/* Additional constants */
+#define RGB(r,g,b) ((DWORD)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
+#define SIZEPALETTE 256
+#define DEFAULT_PALETTE 15
+#define NUMCOLORS 24
+#define DIB_RGB_COLORS 0
+#define CBM_INIT 4
+#define COLORONCOLOR 3
+#define GDI_ERROR 0xFFFFFFFFL
+#define BI_RLE8 1L
+#define BI_RLE4 2L
+#define OF_READ 0
+#define OF_READWRITE 2
+#define OF_CREATE 0x1000
+#define FILE_ATTRIBUTE_READONLY 0x00000001
+#define SEM_FAILCRITICALERRORS 0x0001
+#define SEM_NOOPENFILEERRORBOX 0x8000
+#define SC_CLOSE 0xF060
+#define SC_SCREENSAVE 0xF140
+#define SW_RESTORE 9
+#define SW_MINIMIZE 6
+#define GHND (GMEM_FIXED | GMEM_ZEROINIT)
+#define GMEM_MOVEABLE 0x0002
+#define PM_NOYIELD 0x0002
+#define HKEY_CLASSES_ROOT ((HKEY)(intptr_t)0x80000000)
+#define MB_ICONSTOP MB_ICONHAND
+#define MB_ICONQUESTION 0x00000020L
+#define S_OK 0L
+#define IDC_WAIT ((LPCSTR)(intptr_t)32514)
+#define MAKEINTRESOURCE(i) ((LPCSTR)((DWORD)((WORD)(i))))
+#define _HARDERR_FAIL 0
+#define MAXGETHOSTSTRUCT 1024
+#define PF_INET AF_INET
+
+/* Missing string functions */
+#define strcmpi strcasecmp
+#define _splitpath(p,d,dir,f,e) do{(void)(d);(void)(dir);(void)(f);(void)(e);}while(0)
+#define _makepath(p,d,dir,f,e) do{(void)(p);(void)(d);(void)(dir);(void)(f);(void)(e);}while(0)
+#define strupr(s) _strupr_impl(s)
+#define memicmp(a,b,c) strncasecmp((const char*)(a),(const char*)(b),(c))
+
+static inline char *_strupr_impl(char *s) { if(s) for(char *p=s;*p;p++) *p=toupper(*p); return s; }
+/* _filelength_impl already defined above */
+
+/* Missing Win32 function stubs */
+static inline void GlobalMemoryStatus(LPMEMORYSTATUS s) { if(s) { s->dwTotalPhys=256*1024*1024; s->dwAvailPhys=128*1024*1024; } }
+static inline UINT SetErrorMode(UINT m) { (void)m; return 0; }
+static inline BOOL IsWindow(HWND h) { (void)h; return FALSE; }
+static inline HWND SetFocus(HWND h) { (void)h; return NULL; }
+static inline HPALETTE CreatePalette(const LOGPALETTE *lp) { (void)lp; return NULL; }
+static inline HPALETTE SelectPalette(HDC dc, HPALETTE pal, BOOL bg) { (void)dc; (void)pal; (void)bg; return NULL; }
+static inline UINT RealizePalette(HDC dc) { (void)dc; return 0; }
+static inline HBITMAP CreateDIBitmap(HDC dc, const BITMAPINFOHEADER *h, DWORD init, const void *data, const BITMAPINFO *bi, UINT usage) { (void)dc;(void)h;(void)init;(void)data;(void)bi;(void)usage; return NULL; }
+static inline BOOL DeleteObject(void *obj) { (void)obj; return FALSE; }
+static inline HDC CreateCompatibleDC(HDC dc) { (void)dc; return NULL; }
+static inline int StretchDIBits(HDC dc,int dx,int dy,int dw,int dh,int sx,int sy,int sw,int sh,const void *bits,const BITMAPINFO *bi,UINT usage,DWORD rop) { (void)dc;(void)dx;(void)dy;(void)dw;(void)dh;(void)sx;(void)sy;(void)sw;(void)sh;(void)bits;(void)bi;(void)usage;(void)rop; return 0; }
+static inline BOOL DeleteDC(HDC dc) { (void)dc; return FALSE; }
+static inline int GetObject(HANDLE h, int sz, LPVOID buf) { (void)h;(void)sz;(void)buf; return 0; }
+static inline DWORD GetVersion(void) { return 0x80000005; } /* fake Win95 */
+static inline void ExitProcess(UINT code) { _exit(code); }
+static inline BOOL GetFileTime(HANDLE h, LPFILETIME c, LPFILETIME a, LPFILETIME w) { (void)h;(void)c;(void)a;(void)w; return FALSE; }
+static inline BOOL SetFileTime(HANDLE h, const FILETIME *c, const FILETIME *a, const FILETIME *w) { (void)h;(void)c;(void)a;(void)w; return FALSE; }
+static inline BOOL FileTimeToDosDateTime(const FILETIME *ft, LPWORD d, LPWORD t) { (void)ft;(void)d;(void)t; return FALSE; }
+static inline BOOL DosDateTimeToFileTime(WORD d, WORD t, LPFILETIME ft) { (void)d;(void)t;(void)ft; return FALSE; }
+static inline BOOL SystemTimeToFileTime(const SYSTEMTIME *st, LPFILETIME ft) { (void)st;(void)ft; return FALSE; }
+static inline void GetLocalTime(LPSYSTEMTIME st) { if(st) memset(st,0,sizeof(*st)); }
+static inline BOOL CreateProcessA(LPCSTR app, LPSTR cmd, void *pa, void *ta, BOOL inh, DWORD flags, void *env, LPCSTR dir, STARTUPINFOA *si, LPPROCESS_INFORMATION pi) { (void)app;(void)cmd;(void)pa;(void)ta;(void)inh;(void)flags;(void)env;(void)dir;(void)si;(void)pi; return FALSE; }
+#define CreateProcess CreateProcessA
+static inline BOOL TerminateThread(HANDLE h, DWORD code) { (void)h;(void)code; return FALSE; }
+static inline HANDLE CreateThread(void *sa, DWORD stack, LPTHREAD_START_ROUTINE fn, LPVOID param, DWORD flags, LPDWORD id) { (void)sa;(void)stack;(void)fn;(void)param;(void)flags;(void)id; return NULL; }
+static inline HDC BeginPaint(HWND h, LPPAINTSTRUCT ps) { (void)h;(void)ps; return NULL; }
+static inline BOOL EndPaint(HWND h, const PAINTSTRUCT *ps) { (void)h;(void)ps; return FALSE; }
+static inline HGLOBAL GlobalReAlloc(HGLOBAL h, DWORD sz, UINT flags) { (void)flags; return realloc(h, sz); }
+static inline BOOL GetModuleFileNameA(HMODULE m, LPSTR buf, DWORD sz) { (void)m;(void)buf;(void)sz; return FALSE; }
+#define GetModuleFileName GetModuleFileNameA
+static inline UINT MapVirtualKeyA(UINT code, UINT type) { (void)code;(void)type; return 0; }
+#define MapVirtualKey MapVirtualKeyA
+static inline LONG RegQueryValueA(HKEY key, LPCSTR sub, LPSTR val, LPLONG sz) { (void)key;(void)sub;(void)val;(void)sz; return 2; }
+#define RegQueryValue RegQueryValueA
+
+/* DOS compatibility */
+#define _dos_getdrive(d) do{ *(d)=3; }while(0)
+#define _dos_setdrive(d,n) do{ (void)(d);(void)(n); }while(0)
+#define _memavl() (64*1024*1024L)
+#define _memmax() (64*1024*1024L)
+static inline int _lread(int fd, void *buf, unsigned int sz) { return (int)read(fd, buf, sz); }
+static inline int _lwrite(int fd, const void *buf, unsigned int sz) { return (int)write(fd, buf, sz); }
+static inline long _llseek(int fd, long off, int origin) { return lseek(fd, off, origin); }
+static inline int _lclose(int fd) { return close(fd); }
+
+#define __stdcall
+#define __declspec(x)
+
+
 #endif // PLATFORM_H
