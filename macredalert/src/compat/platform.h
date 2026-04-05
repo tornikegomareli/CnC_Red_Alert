@@ -10,12 +10,122 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <ctype.h>
+
+// ============================================================================
+// Additional basic types
+// ============================================================================
+typedef unsigned char   UBYTE;
+typedef unsigned short  UWORD;
+
+// ============================================================================
+// POSIX compatibility macros
+// ============================================================================
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+#ifndef _READ
+#define _READ  1
+#endif
+#ifndef _WRITE
+#define _WRITE 2
+#endif
+
+// Case-insensitive string comparison
+#define stricmp  strcasecmp
+#define strnicmp strncasecmp
+
+// wsprintf -> sprintf
+#define wsprintf sprintf
+
+// filelength() implementation via fstat
+static inline long _filelength_impl(int fd) {
+    struct stat st;
+    if (fstat(fd, &st) == -1) return -1L;
+    return (long)st.st_size;
+}
+#define filelength(fd) _filelength_impl(fd)
+
+// min/max macros
+#ifndef min
+#define min(a,b) (((a)<(b))?(a):(b))
+#endif
+#ifndef max
+#define max(a,b) (((a)>(b))?(a):(b))
+#endif
+
+// ============================================================================
+// DirectSound status bits (needed outside dsound.h)
+// ============================================================================
+#define DSBSTATUS_PLAYING   0x00000001
+#define DSBSTATUS_LOOPING   0x00000004
+
+// ============================================================================
+// MMIO types and constants
+// ============================================================================
+typedef void* HMMIO;
+#define MMIO_READ       0
+#define MMIO_WRITE      1
+#define MMIO_READWRITE  2
+#define MMIO_CREATE     0x1000
+
+// ============================================================================
+// Additional Win32 file / thread / process constants
+// ============================================================================
+#define FILE_FLAG_OVERLAPPED        0x40000000
+#define DUPLICATE_SAME_ACCESS       0x00000002
+#define THREAD_ALL_ACCESS           0x1FFFFF
+#define THREAD_PRIORITY_TIME_CRITICAL 15
+#define ERROR_IO_PENDING            997L
+#define ERROR_IO_INCOMPLETE         996L
+#define DRIVE_CDROM                 5
+
+// ============================================================================
+// Additional Windows message constants
+// ============================================================================
+#define WM_LBUTTONDBLCLK    0x0203
+#define WM_RBUTTONDBLCLK    0x0206
+#define WM_MBUTTONDOWN      0x0207
+#define WM_MBUTTONUP        0x0208
+#define WM_MBUTTONDBLCLK    0x0209
+
+// ============================================================================
+// Modem status bits
+// ============================================================================
+#define MS_CTS_ON   0x0010
+#define MS_DSR_ON   0x0020
+#define MS_RING_ON  0x0040
+#define MS_RLSD_ON  0x0080
+
+// ============================================================================
+// Comm error codes
+// ============================================================================
+#define CE_RXOVER   0x0001
+#define CE_OVERRUN  0x0002
+#define CE_RXPARITY 0x0004
+#define CE_FRAME    0x0008
+#define CE_IOE      0x0010
+#define CE_TXFULL   0x0100
+
+// ============================================================================
+// DCB control flags
+// ============================================================================
+#define DTR_CONTROL_ENABLE      1
+#define RTS_CONTROL_DISABLE     0
+#define RTS_CONTROL_HANDSHAKE   2
+
+// ============================================================================
+// PURGE constants (additional)
+// ============================================================================
+#define PURGE_TXABORT   0x0001
+#define PURGE_RXABORT   0x0002
 
 #ifdef __cplusplus
 extern "C" {
@@ -225,11 +335,32 @@ typedef struct tagBITMAPINFO {
 typedef struct _DCB {
     DWORD DCBlength;
     DWORD BaudRate;
-    DWORD fBinary;
-    DWORD fParity;
+    DWORD fBinary:1;
+    DWORD fParity:1;
+    DWORD fOutxCtsFlow:1;
+    DWORD fOutxDsrFlow:1;
+    DWORD fDtrControl:2;
+    DWORD fDsrSensitivity:1;
+    DWORD fTXContinueOnXoff:1;
+    DWORD fOutX:1;
+    DWORD fInX:1;
+    DWORD fErrorChar:1;
+    DWORD fNull:1;
+    DWORD fRtsControl:2;
+    DWORD fAbortOnError:1;
+    DWORD fDummy2:17;
+    WORD wReserved;
+    WORD XonLim;
+    WORD XoffLim;
     BYTE ByteSize;
     BYTE Parity;
     BYTE StopBits;
+    char XonChar;
+    char XoffChar;
+    char ErrorChar;
+    char EofChar;
+    char EvtChar;
+    WORD wReserved1;
 } DCB, *LPDCB;
 
 typedef struct _COMMTIMEOUTS {
@@ -272,6 +403,7 @@ static inline BOOL PurgeComm(HANDLE h, DWORD f) { (void)h; (void)f; return FALSE
 static inline BOOL EscapeCommFunction(HANDLE h, DWORD f) { (void)h; (void)f; return FALSE; }
 static inline BOOL SetupComm(HANDLE h, DWORD in, DWORD out) { (void)h; (void)in; (void)out; return FALSE; }
 static inline BOOL WaitCommEvent(HANDLE h, LPDWORD e, void *o) { (void)h; (void)e; (void)o; return FALSE; }
+static inline BOOL GetCommModemStatus(HANDLE h, LPDWORD s) { (void)h; (void)s; return FALSE; }
 #define PURGE_TXCLEAR 0x0004
 #define PURGE_RXCLEAR 0x0008
 #define SETDTR 5
@@ -623,6 +755,41 @@ static inline HMODULE LoadLibraryA(LPCSTR name) { (void)name; return NULL; }
 static inline BOOL FreeLibrary(HMODULE h) { (void)h; return FALSE; }
 static inline void *GetProcAddress(HMODULE h, LPCSTR name) { (void)h; (void)name; return NULL; }
 static inline DWORD GetCurrentProcessId(void) { return (DWORD)getpid(); }
+static inline HANDLE GetCurrentProcess(void) { return NULL; }
+static inline HANDLE GetCurrentThread(void) { return NULL; }
+static inline BOOL DuplicateHandle(HANDLE src, HANDLE srcH, HANDLE dst, HANDLE *out, DWORD access, BOOL inherit, DWORD opts) {
+    (void)src; (void)srcH; (void)dst; (void)out; (void)access; (void)inherit; (void)opts; return FALSE;
+}
+static inline BOOL SetThreadPriority(HANDLE h, int pri) { (void)h; (void)pri; return FALSE; }
+static inline HANDLE CreateEventA(void *sec, BOOL manual, BOOL init, LPCSTR name) {
+    (void)sec; (void)manual; (void)init; (void)name; return NULL;
+}
+#define CreateEvent CreateEventA
+static inline BOOL SetEvent(HANDLE h) { (void)h; return FALSE; }
+static inline BOOL ResetEvent(HANDLE h) { (void)h; return FALSE; }
+#ifndef INFINITE
+#define INFINITE 0xFFFFFFFF
+#endif
+#define WAIT_OBJECT_0 0
+#define WAIT_TIMEOUT  0x00000102L
+static inline DWORD WaitForSingleObject(HANDLE h, DWORD ms) { (void)h; (void)ms; return 0; }
+static inline BOOL GetOverlappedResult(HANDLE h, LPOVERLAPPED o, LPDWORD bytes, BOOL wait) {
+    (void)h; (void)o; (void)bytes; (void)wait; return FALSE;
+}
+static inline UINT GetDriveTypeA(LPCSTR path) { (void)path; return 0; }
+#define GetDriveType GetDriveTypeA
+static inline LONG RegEnumKeyExA(HKEY key, DWORD idx, LPSTR name, LPDWORD nameSz, LPDWORD reserved, LPSTR cls, LPDWORD clsSz, void *ft) {
+    (void)key; (void)idx; (void)name; (void)nameSz; (void)reserved; (void)cls; (void)clsSz; (void)ft; return 2;
+}
+#define RegEnumKeyEx RegEnumKeyExA
+static inline LONG RegQueryInfoKeyA(HKEY key, LPSTR cls, LPDWORD clsSz, LPDWORD reserved,
+    LPDWORD subKeys, LPDWORD maxSubKey, LPDWORD maxClass, LPDWORD values,
+    LPDWORD maxValueName, LPDWORD maxValueData, LPDWORD secDesc, void *ft) {
+    (void)key; (void)cls; (void)clsSz; (void)reserved; (void)subKeys; (void)maxSubKey;
+    (void)maxClass; (void)values; (void)maxValueName; (void)maxValueData; (void)secDesc; (void)ft;
+    return 2;
+}
+#define RegQueryInfoKey RegQueryInfoKeyA
 static inline int GetDeviceCaps(HDC h, int idx) { (void)h; (void)idx; return 0; }
 
 // GDI
@@ -650,6 +817,43 @@ static inline char *ltoa(long value, char *str, int base) {
 static inline LONG OleInitialize(LPVOID reserved) { (void)reserved; return 0; }
 static inline void OleUninitialize(void) {}
 static inline LONG CoInitialize(LPVOID reserved) { (void)reserved; return 0; }
+
+// MMIO function stubs
+static inline HMMIO mmioOpen(char *filename, void *info, DWORD flags) {
+    (void)info;
+    if (!filename) return NULL;
+    const char *mode = "rb";
+    if (flags & MMIO_CREATE) {
+        if (flags & MMIO_READWRITE) mode = "w+b";
+        else mode = "wb";
+    } else if ((flags & MMIO_READWRITE) == MMIO_READWRITE) {
+        mode = "r+b";
+    } else if (flags & MMIO_WRITE) {
+        mode = "wb";
+    }
+    return (HMMIO)fopen(filename, mode);
+}
+static inline long mmioRead(HMMIO h, char *buf, long bytes) {
+    if (!h) return -1;
+    return (long)fread(buf, 1, (size_t)bytes, (FILE*)h);
+}
+static inline long mmioWrite(HMMIO h, const char *buf, long bytes) {
+    if (!h) return -1;
+    return (long)fwrite(buf, 1, (size_t)bytes, (FILE*)h);
+}
+static inline long mmioSeek(HMMIO h, long offset, int origin) {
+    if (!h) return -1;
+    fseek((FILE*)h, offset, origin);
+    return ftell((FILE*)h);
+}
+static inline int mmioClose(HMMIO h, UINT flags) {
+    (void)flags;
+    if (!h) return -1;
+    return fclose((FILE*)h);
+}
+static inline int mmioSetBuffer(HMMIO h, char *buf, long sz, UINT flags) {
+    (void)h; (void)buf; (void)sz; (void)flags; return 0;
+}
 
 // DDE stubs
 typedef void *HSZ;
