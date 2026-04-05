@@ -10,6 +10,14 @@ struct SREGS {
     unsigned short es, cs, ss, ds;
 };
 
+/* Undef macros from FUNCTION.H that clash with function declarations */
+#ifdef int386
+#undef int386
+#endif
+#ifdef int386x
+#undef int386x
+#endif
+
 static inline int int386(int intno, union REGS *in, union REGS *out) {
     (void)intno; (void)in; (void)out; return 0;
 }

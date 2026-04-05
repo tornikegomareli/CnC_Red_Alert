@@ -129,6 +129,7 @@ pub fn build(b: *std.Build) void {
         "-Dcdecl=",
         "-D_far=",
         "-D__far=",
+        "-Dindex(s,c)=strchr(s,c)",
         "-fno-sanitize=undefined",
         "-fms-extensions",
         "-fdelayed-template-parsing",
@@ -442,7 +443,7 @@ const code_sources: []const []const u8 = &.{
     "TEAM.CPP",
     "TEAMTYPE.CPP",
     "TECHNO.CPP",
-    "TEMP.CPP",
+    // TEMP.CPP -- excluded (patch notes file, not compilable source)
     "TEMPLATE.CPP",
     "TENMGR.CPP",
     "TERRAIN.CPP",
