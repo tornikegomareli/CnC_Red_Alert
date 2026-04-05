@@ -117,15 +117,15 @@ pub fn build(b: *std.Build) void {
         "-D__far=",
         "-fno-sanitize=undefined",
         "-fms-extensions",
+        "-fdelayed-template-parsing",
         "-fpermissive",
         "-ferror-limit=50",
     };
 
     // CODE/ sources get FUNCTION.H force-included (monolithic include model)
-    // Note: -include causes Zig 0.15 CacheCheckFailed but compilation succeeds
     const code_cxx_flags: []const []const u8 = cxx_flags ++ &[_][]const u8{
-        "-include", "fwd_types.h",
-        "-include", "function.h",
+        "-include", "/Users/tgomareli/Development/redalert/CnC_Red_Alert/macredalert/src/compat/fwd_types.h",
+        "-include", "/Users/tgomareli/Development/redalert/CnC_Red_Alert/macredalert/src/compat/FUNCTION.H",
     };
 
     // =========================================================================

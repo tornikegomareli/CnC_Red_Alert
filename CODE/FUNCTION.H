@@ -205,11 +205,13 @@ struct NoInitClass {
 #include	"key.h"
 #endif
 
+#include <shape.h>
+#include <timer.h>
+#include	"jshell.h"
 #include <wwlib32.h>
 #include	"mpu.h"
 #include	"bench.h"
 #include	"rect.h"
-#include	"jshell.h"
 #include	"buff.h"
 #include	"face.h"
 #include	"random.h"
