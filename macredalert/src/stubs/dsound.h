@@ -73,6 +73,7 @@ struct IDirectSoundBuffer {
     LONG SetCurrentPosition(DWORD pos) { (void)pos; return DS_OK; }
     LONG Restore() { return DS_OK; }
     LONG GetCaps(LPDSBCAPS caps) { (void)caps; return DS_OK; }
+    LONG SetFormat(LPWAVEFORMATEX fmt) { (void)fmt; return DS_OK; }
     LONG Release() { return 0; }
 };
 
