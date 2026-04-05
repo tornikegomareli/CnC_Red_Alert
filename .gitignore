@@ -1,0 +1,14 @@
+# Build artifacts
+macredalert/.zig-cache/
+macredalert/zig-out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Claude
+CLAUDE.md
