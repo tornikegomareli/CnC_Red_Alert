@@ -110,6 +110,7 @@ pub fn build(b: *std.Build) void {
         "-Wno-int-to-pointer-cast",
         "-DTRUE_FALSE_DEFINED",
         "-Wno-incompatible-library-redeclaration",
+        "-Wno-builtin-requires-header",
         "-Dfar=",
         "-Dcdecl=",
         "-D_far=",
@@ -120,10 +121,9 @@ pub fn build(b: *std.Build) void {
         "-ferror-limit=50",
     };
 
-    // CODE/ sources get FUNCTION.H force-included (monolithic include model)
+    // CODE/ sources get precompile.h force-included (monolithic include model)
     const code_cxx_flags: []const []const u8 = cxx_flags ++ &[_][]const u8{
-        "-include", "fwd_types.h",
-        "-include", "../CODE/FUNCTION.H",
+        "-include", "precompile.h",
     };
 
     // =========================================================================
@@ -135,13 +135,18 @@ pub fn build(b: *std.Build) void {
         .flags = code_cxx_flags,
     });
 
+    // WIN32LIB sources get fwd_types.h but NOT FUNCTION.H
+    const win32lib_cxx_flags: []const []const u8 = cxx_flags ++ &[_][]const u8{
+        "-include", "fwd_types.h",
+    };
+
     // =========================================================================
     // Group 2: Original WIN32LIB/ sources (excluding files we replace)
     // =========================================================================
     root_module.addCSourceFiles(.{
         .root = .{ .cwd_relative = "../WIN32LIB" },
         .files = win32lib_sources,
-        .flags = cxx_flags,
+        .flags = win32lib_cxx_flags,
     });
 
     // =========================================================================
