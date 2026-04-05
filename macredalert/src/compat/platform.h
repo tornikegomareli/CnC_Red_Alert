@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+/* strcasecmp/strncasecmp provided by strings.h above */
 #include <stdint.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -1108,5 +1109,46 @@ static inline int _lclose(int fd) { return close(fd); }
 #define __stdcall
 #define __declspec(x)
 
+
+
+/* Winsock types for files that need them without including winsock.h */
+#ifndef _WINSOCK_H_STUB
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+typedef int SOCKET;
+#define INVALID_SOCKET ((SOCKET)-1)
+#define SOCKET_ERROR (-1)
+#define INADDR_ANY ((unsigned long)0x00000000)
+#define SOL_SOCKET 0xffff
+#define SO_SNDBUF 0x1001
+#define SO_RCVBUF 0x1002
+#define SOCK_DGRAM 2
+#define AF_INET 2
+#define PF_INET AF_INET
+#define IPPROTO_TCP 6
+#define TCP_NODELAY 1
+#define FD_READ 0x01
+#define FD_WRITE 0x02
+#define FD_CLOSE 0x20
+typedef struct { unsigned short sa_family; char sa_data[14]; } SOCKADDR;
+typedef void *LPSOCKADDR;
+#define WSADATA int
+#define MAXGETHOSTSTRUCT 1024
+#endif
+
+typedef void *FARPROC;
+typedef const char *LPCTSTR;
+#define LPCTSTR LPCSTR
+
+
+/* Mouse function stubs (mouse.h excluded from wwlib32.h) */
+static inline void Show_Mouse(void) {}
+static inline void Hide_Mouse(void) {}
+static inline void Conditional_Show_Mouse(void) {}
+static inline void Conditional_Hide_Mouse(void) {}
+static inline void Set_Mouse_Cursor(int hotx, int hoty, void *cursor) { (void)hotx; (void)hoty; (void)cursor; }
+static inline int Get_Mouse_State(void) { return 0; }
 
 #endif // PLATFORM_H
