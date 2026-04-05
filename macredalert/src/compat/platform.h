@@ -45,6 +45,10 @@ typedef char                CHAR;
 typedef unsigned char       UCHAR;
 typedef float               FLOAT;
 
+#ifndef VOID
+#define VOID void
+#endif
+
 typedef void                *LPVOID;
 typedef const void          *LPCVOID;
 typedef char                *LPSTR;
@@ -105,6 +109,13 @@ typedef UINT                MMRESULT;
 #define _MAX_DIR            256
 #define _MAX_DRIVE          3
 
+// macOS defines BIG_ENDIAN as a constant (4321) for comparison with BYTE_ORDER.
+// The game code uses #ifdef BIG_ENDIAN to mean "this is a big-endian platform",
+// which is always true on macOS. Undefine it so the little-endian code path is used.
+#ifdef BIG_ENDIAN
+#undef BIG_ENDIAN
+#endif
+
 // Useful macros
 #ifndef LOWORD
 #define LOWORD(l) ((WORD)((DWORD)(l) & 0xffff))
@@ -157,6 +168,14 @@ typedef UINT                MMRESULT;
 // ============================================================================
 // Windows structures
 // ============================================================================
+
+typedef struct _OVERLAPPED {
+    DWORD Internal;
+    DWORD InternalHigh;
+    DWORD Offset;
+    DWORD OffsetHigh;
+    HANDLE hEvent;
+} OVERLAPPED, *LPOVERLAPPED;
 
 typedef struct _FILETIME {
     DWORD dwLowDateTime;

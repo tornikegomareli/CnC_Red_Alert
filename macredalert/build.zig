@@ -117,6 +117,13 @@ pub fn build(b: *std.Build) void {
         "-fno-sanitize=undefined",
         "-fms-extensions",
         "-fpermissive",
+        "-ferror-limit=50",
+    };
+
+    // CODE/ sources get FUNCTION.H force-included (monolithic include model)
+    const code_cxx_flags: []const []const u8 = cxx_flags ++ &[_][]const u8{
+        "-include", "fwd_types.h",
+        "-include", "../CODE/FUNCTION.H",
     };
 
     // =========================================================================
@@ -125,7 +132,7 @@ pub fn build(b: *std.Build) void {
     root_module.addCSourceFiles(.{
         .root = .{ .cwd_relative = "../CODE" },
         .files = code_sources,
-        .flags = cxx_flags,
+        .flags = code_cxx_flags,
     });
 
     // =========================================================================

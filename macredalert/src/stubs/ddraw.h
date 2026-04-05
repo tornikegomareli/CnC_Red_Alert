@@ -118,13 +118,91 @@ typedef struct _DDCAPS {
 #define DDGBS_CANBLT                    0x00000001
 #define DDGBS_ISBLTDONE                 0x00000002
 
-// Interface stubs — void pointers since we don't use COM
+// Wait for vertical blank
+#define DDWAITVB_BLOCKBEGIN             0x00000001
+
+// GUID placeholder
+typedef struct _GUID { DWORD Data1; } GUID, IID;
+#define IID_IDirectDraw2 (*(IID*)0)
+
+#ifdef __cplusplus
+
+// IDirectDrawPalette stub
+struct IDirectDrawPalette {
+    LONG SetEntries(DWORD flags, DWORD start, DWORD count, LPPALETTEENTRY entries) {
+        (void)flags; (void)start; (void)count; (void)entries; return DD_OK;
+    }
+    LONG Release() { return 0; }
+};
+
+// IDirectDrawSurface stub
+struct IDirectDrawSurface {
+    LONG Lock(LPRECT rect, LPDDSURFACEDESC desc, DWORD flags, HANDLE event) {
+        (void)rect; (void)desc; (void)flags; (void)event; return DD_OK;
+    }
+    LONG Unlock(LPVOID ptr) { (void)ptr; return DD_OK; }
+    LONG Release() { return 0; }
+    LONG Blt(LPRECT dst, IDirectDrawSurface *src, LPRECT srcrect, DWORD flags, LPDDBLTFX fx) {
+        (void)dst; (void)src; (void)srcrect; (void)flags; (void)fx; return DD_OK;
+    }
+    LONG BltFast(DWORD x, DWORD y, IDirectDrawSurface *src, LPRECT srcrect, DWORD flags) {
+        (void)x; (void)y; (void)src; (void)srcrect; (void)flags; return DD_OK;
+    }
+    LONG GetBltStatus(DWORD flags) { (void)flags; return DD_OK; }
+    LONG SetPalette(IDirectDrawPalette *pal) { (void)pal; return DD_OK; }
+    LONG SetColorKey(DWORD flags, DDCOLORKEY *key) { (void)flags; (void)key; return DD_OK; }
+    LONG Restore() { return DD_OK; }
+    LONG GetSurfaceDesc(LPDDSURFACEDESC desc) { (void)desc; return DD_OK; }
+    LONG AddAttachedSurface(IDirectDrawSurface *surf) { (void)surf; return DD_OK; }
+    LONG Flip(IDirectDrawSurface *surf, DWORD flags) { (void)surf; (void)flags; return DD_OK; }
+};
+
+// IDirectDraw stub
+struct IDirectDraw {
+    LONG SetCooperativeLevel(HWND hwnd, DWORD flags) { (void)hwnd; (void)flags; return DD_OK; }
+    LONG SetDisplayMode(DWORD w, DWORD h, DWORD bpp) { (void)w; (void)h; (void)bpp; return DD_OK; }
+    LONG CreateSurface(LPDDSURFACEDESC desc, IDirectDrawSurface **surf, void *unk) {
+        (void)desc; (void)unk;
+        static IDirectDrawSurface dummy;
+        if (surf) *surf = &dummy;
+        return DD_OK;
+    }
+    LONG CreatePalette(DWORD flags, LPPALETTEENTRY entries, IDirectDrawPalette **pal, void *unk) {
+        (void)flags; (void)entries; (void)unk;
+        static IDirectDrawPalette dummy;
+        if (pal) *pal = &dummy;
+        return DD_OK;
+    }
+    LONG RestoreDisplayMode() { return DD_OK; }
+    LONG Release() { return 0; }
+    LONG GetCaps(LPDDCAPS driver, LPDDCAPS emul) { (void)driver; (void)emul; return DD_OK; }
+    LONG WaitForVerticalBlank(DWORD flags, HANDLE event) { (void)flags; (void)event; return DD_OK; }
+    LONG QueryInterface(IID &iid, LPVOID *obj) { (void)iid; (void)obj; return DD_OK; }
+};
+
+// IDirectDraw2 stub
+struct IDirectDraw2 {
+    LONG GetAvailableVidMem(DDSCAPS *caps, LPDWORD total, LPDWORD free_mem) {
+        (void)caps; if (total) *total = 0; if (free_mem) *free_mem = 0; return DD_OK;
+    }
+    LONG Release() { return 0; }
+};
+
+typedef IDirectDraw *LPDIRECTDRAW;
+typedef IDirectDraw2 *LPDIRECTDRAW2;
+typedef IDirectDrawSurface *LPDIRECTDRAWSURFACE;
+typedef IDirectDrawSurface *LPDIRECTDRAWSURFACE2;
+typedef IDirectDrawPalette *LPDIRECTDRAWPALETTE;
+typedef void *LPDIRECTDRAWCLIPPER;
+
+#else
 typedef void *LPDIRECTDRAW;
 typedef void *LPDIRECTDRAW2;
 typedef void *LPDIRECTDRAWSURFACE;
 typedef void *LPDIRECTDRAWSURFACE2;
 typedef void *LPDIRECTDRAWPALETTE;
 typedef void *LPDIRECTDRAWCLIPPER;
+#endif
 
 // DirectDraw creation function
 static inline LONG DirectDrawCreate(void *guid, LPDIRECTDRAW *dd, void *unk) {

@@ -54,8 +54,47 @@ typedef struct _DSBCAPS {
     DWORD dwPlayCpuOverhead;
 } DSBCAPS, *LPDSBCAPS;
 
+#ifdef __cplusplus
+
+struct IDirectSoundBuffer {
+    LONG Lock(DWORD off, DWORD bytes, LPVOID *ptr1, LPDWORD sz1, LPVOID *ptr2, LPDWORD sz2, DWORD flags) {
+        (void)off; (void)bytes; (void)ptr1; (void)sz1; (void)ptr2; (void)sz2; (void)flags; return DS_OK;
+    }
+    LONG Unlock(LPVOID ptr1, DWORD sz1, LPVOID ptr2, DWORD sz2) {
+        (void)ptr1; (void)sz1; (void)ptr2; (void)sz2; return DS_OK;
+    }
+    LONG Play(DWORD res1, DWORD res2, DWORD flags) { (void)res1; (void)res2; (void)flags; return DS_OK; }
+    LONG Stop() { return DS_OK; }
+    LONG SetVolume(LONG vol) { (void)vol; return DS_OK; }
+    LONG SetPan(LONG pan) { (void)pan; return DS_OK; }
+    LONG SetFrequency(DWORD freq) { (void)freq; return DS_OK; }
+    LONG GetStatus(LPDWORD status) { if (status) *status = 0; return DS_OK; }
+    LONG GetCurrentPosition(LPDWORD play, LPDWORD write) { (void)play; (void)write; return DS_OK; }
+    LONG SetCurrentPosition(DWORD pos) { (void)pos; return DS_OK; }
+    LONG Restore() { return DS_OK; }
+    LONG GetCaps(LPDSBCAPS caps) { (void)caps; return DS_OK; }
+    LONG Release() { return 0; }
+};
+
+struct IDirectSound {
+    LONG SetCooperativeLevel(HWND hwnd, DWORD level) { (void)hwnd; (void)level; return DS_OK; }
+    LONG CreateSoundBuffer(LPDSBUFFERDESC desc, IDirectSoundBuffer **buf, void *unk) {
+        (void)desc; (void)unk;
+        static IDirectSoundBuffer dummy;
+        if (buf) *buf = &dummy;
+        return DS_OK;
+    }
+    LONG GetCaps(void *caps) { (void)caps; return DS_OK; }
+    LONG Release() { return 0; }
+};
+
+typedef IDirectSound *LPDIRECTSOUND;
+typedef IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
+
+#else
 typedef void *LPDIRECTSOUND;
 typedef void *LPDIRECTSOUNDBUFFER;
+#endif
 
 static inline LONG DirectSoundCreate(void *guid, LPDIRECTSOUND *ds, void *unk) {
     (void)guid; (void)unk;
