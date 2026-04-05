@@ -47,10 +47,10 @@
 #define _WIN32
 #endif // _WIN32
 #define WIN32 1
+#endif
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
-#endif
 
 
 // Note: SKB 4/11/94
@@ -208,7 +208,7 @@ typedef void 	VOID;
 **	November of '94. Until the compiler supports this, use the following
 **	definition.
 */
-#ifndef __BORLANDC__
+#ifdef __WATCOMC__
 #ifndef TRUE_FALSE_DEFINED
 #define TRUE_FALSE_DEFINED
 enum {false=0,true=1};
@@ -249,7 +249,7 @@ typedef int bool;
 
 
 // Inline Routines
-//ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //
 // These Template functions are generally used
 // by classes when they havce over loaded > and <.
