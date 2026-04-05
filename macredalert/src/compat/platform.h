@@ -1131,4 +1131,26 @@ static inline void Conditional_Hide_Mouse(int x1, int y1, int x2, int y2) { (voi
 static inline void Set_Mouse_Cursor(int hotx, int hoty, void *cursor) { (void)hotx; (void)hoty; (void)cursor; }
 static inline int Get_Mouse_State(void) { return 0; }
 
+/* Audio system stubs (module excluded, functions referenced from core game) */
+typedef int SampleType;
+typedef int SoundType;
+#define SAMPLE_NONE -1
+static inline int Play_Sample(void const *sample, int pri=0, int vol=0xFF, signed short pan=0) { (void)sample;(void)pri;(void)vol;(void)pan; return -1; }
+static inline int Is_Sample_Playing(void const *sample) { (void)sample; return 0; }
+static inline void Stop_Sample(int handle) { (void)handle; }
+static inline int Stop_Sample_Playing(void const *sample) { (void)sample; return 0; }
+static inline void Sound_End(void) {}
+static inline int Fade_Sample(int handle, int ticks) { (void)handle;(void)ticks; return 0; }
+static inline int File_Stream_Sample_Vol(char const *name, int vol, int loop) { (void)name;(void)vol;(void)loop; return -1; }
+static inline int Sample_Status(int handle) { (void)handle; return 0; }
+static inline void Set_Score_Vol(int vol) { (void)vol; }
+static inline int Start_Primary_Sound_Buffer(int forced=0) { (void)forced; return 0; }
+static inline void Stop_Primary_Sound_Buffer(void) {}
+static inline void Set_Primary_Buffer_Format(void) {}
+static inline int Get_Digi_Handle(void) { return -1; }
+static inline int Sound_Callback(void *obj, int event, int val, void *data) { (void)obj;(void)event;(void)val;(void)data; return 0; }
+static inline int Audio_Init(void *hwnd, int bits, int stereo, int rate, int reverse) { (void)hwnd;(void)bits;(void)stereo;(void)rate;(void)reverse; return 0; }
+typedef void (*Audio_Focus_Loss_Func_Type)(void);
+static inline int StreamLowImpact = 0;
+
 #endif // PLATFORM_H

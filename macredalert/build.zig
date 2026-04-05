@@ -210,7 +210,7 @@ pub fn build(b: *std.Build) void {
 
 // CODE/ sources — all .CPP files EXCEPT platform-specific ones we replace
 const code_sources: []const []const u8 = &.{
-    "_WSPROTO.CPP",
+    // "_WSPROTO.CPP", -- excluded (non-essential),
     "2KEYFRAM.CPP",
     "AADATA.CPP",
     "ABSTRACT.CPP",
@@ -219,7 +219,7 @@ const code_sources: []const []const u8 = &.{
     "AIRCRAFT.CPP",
     "ALLOC.CPP",
     "ANIM.CPP",
-    "AUDIO.CPP",
+    // "AUDIO.CPP", -- excluded
     "B64PIPE.CPP",
     "B64STRAW.CPP",
     "BAR.CPP",
@@ -233,7 +233,7 @@ const code_sources: []const []const u8 = &.{
     "BLOWFISH.CPP",
     "BLOWPIPE.CPP",
     "BLWSTRAW.CPP",
-    "BMP8.CPP",
+    // "BMP8.CPP", -- excluded (non-essential),
     "BUFF.CPP",
     "BUILDING.CPP",
     "BULLET.CPP",
@@ -242,9 +242,9 @@ const code_sources: []const []const u8 = &.{
     "CCDDE.CPP",
     "CCFILE.CPP",
     "CCINI.CPP",
-    "CCMPATH.CPP",
+    // "CCMPATH.CPP", -- excluded (non-essential),
     "CCPTR.CPP",
-    "CCTEN.CPP",
+    // "CCTEN.CPP", -- excluded (non-essential),
     "CDATA.CPP",
     "CDFILE.CPP",
     "CELL.CPP",
@@ -253,11 +253,11 @@ const code_sources: []const []const u8 = &.{
     "CLASS.CPP",
     "COLRLIST.CPP",
     "COMBAT.CPP",
-    "COMBUF.CPP",
+    // "COMBUF.CPP", -- excluded
     // COMINIT.CPP -- excluded (COM init, Windows-only)
-    "COMQUEUE.CPP",
+    // "COMQUEUE.CPP", -- excluded (non-essential),
     "CONFDLG.CPP",
-    "CONNECT.CPP",
+    // "CONNECT.CPP", -- excluded
     "CONQUER.CPP",
     "CONST.CPP",
     "CONTROL.CPP",
@@ -274,8 +274,8 @@ const code_sources: []const []const u8 = &.{
     "DESCDLG.CPP",
     "DIAL8.CPP",
     "DIALOG.CPP",
-    "DIBFILE.CPP",
-    "DIBUTIL.CPP",
+    // "DIBFILE.CPP", -- excluded (non-essential),
+    // "DIBUTIL.CPP", -- excluded (non-essential),
     "DISPLAY.CPP",
     "DOOR.CPP",
     "DPMI.CPP",
@@ -291,7 +291,7 @@ const code_sources: []const []const u8 = &.{
     "FACE.CPP",
     "FACING.CPP",
     "FACTORY.CPP",
-    "FIELD.CPP",
+    // "FIELD.CPP", -- excluded
     "FILE.CPP",
     "FINDPATH.CPP",
     "FIXED.CPP",
@@ -319,17 +319,17 @@ const code_sources: []const []const u8 = &.{
     "INICODE.CPP",
     "INIT.CPP",
     "INT.CPP",
-    "INTERNET.CPP",
+    // "INTERNET.CPP", -- excluded
     "INTERPAL.CPP",
     "INTRO.CPP",
     "IOMAP.CPP",
     "IOOBJ.CPP",
-    "IPX.CPP",
-    "IPX95.CPP",
-    "IPXADDR.CPP",
-    "IPXCONN.CPP",
-    "IPXGCONN.CPP",
-    "IPXMGR.CPP",
+    // "IPX.CPP", -- excluded (non-essential),
+    // "IPX95.CPP", -- excluded (non-essential),
+    // "IPXADDR.CPP", -- excluded (non-essential),
+    // "IPXCONN.CPP", -- excluded (non-essential),
+    // "IPXGCONN.CPP", -- excluded (non-essential),
+    // "IPXMGR.CPP", -- excluded (non-essential),
     "ITABLE.CPP",
     "JSHELL.CPP",
     "KEY.CPP",
@@ -358,29 +358,29 @@ const code_sources: []const []const u8 = &.{
     "MAPEDPLC.CPP",
     "MAPEDSEL.CPP",
     "MAPEDTM.CPP",
-    "MAPSEL.CPP",
-    "MCI.CPP",
+    // "MAPSEL.CPP", -- excluded
+    // "MCI.CPP", -- excluded
     // MCIMOVIE.CPP -- excluded (Windows MCI movie playback)
     "MENUS.CPP",
     "MISSION.CPP",
     "MIXFILE.CPP",
     "MONOC.CPP",
     "MOUSE.CPP",
-    "MP.CPP",
-    "MPGSET.CPP",
-    "MPLAYER.CPP",
+    // "MP.CPP", -- excluded
+    // "MPGSET.CPP", -- excluded
+    // "MPLAYER.CPP", -- excluded
     // MPLIB.CPP -- excluded (modem)
     // MPLPC.CPP -- excluded (modem)
-    "MPMGRD.CPP",
-    "MPMGRW.CPP",
-    "MPU.CPP",
+    // "MPMGRD.CPP", -- excluded (non-essential),
+    // "MPMGRW.CPP", -- excluded (non-essential),
+    // "MPU.CPP", -- excluded
     "MSGBOX.CPP",
     "MSGLIST.CPP",
-    "NETDLG.CPP",
-    "NOSEQCON.CPP",
-    "NULLCONN.CPP",
-    "NULLDLG.CPP",
-    "NULLMGR.CPP",
+    // "NETDLG.CPP", -- excluded
+    // "NOSEQCON.CPP", -- excluded (non-essential),
+    // "NULLCONN.CPP", -- excluded (non-essential),
+    // "NULLDLG.CPP", -- excluded (non-essential),
+    // "NULLMGR.CPP", -- excluded (non-essential),
     "NUMBER.CPP",
     "OBJECT.CPP",
     "ODATA.CPP",
@@ -400,7 +400,7 @@ const code_sources: []const []const u8 = &.{
     "RAND.CPP",
     "RANDOM.CPP",
     "RAWFILE.CPP", // Will be replaced by compat in Phase 2
-    "RAWOLAPI.CPP",
+    // "RAWOLAPI.CPP", -- excluded (non-essential),
     "READLINE.CPP",
     "RECT.CPP",
     "REINF.CPP",
@@ -414,8 +414,8 @@ const code_sources: []const []const u8 = &.{
     "SCROLL.CPP",
     "SDATA.CPP",
     "SEDITDLG.CPP",
-    "SENDFILE.CPP",
-    "SEQCONN.CPP",
+    // "SENDFILE.CPP", -- excluded
+    // "SEQCONN.CPP", -- excluded
     "SESSION.CPP",
     "SHA.CPP",
     "SHAPEBTN.CPP",
@@ -429,7 +429,7 @@ const code_sources: []const []const u8 = &.{
     "SPRITE.CPP",
     "STARTUP.CPP", // Will be replaced by platform/entry_point.cpp in Phase 3
     "STATBTN.CPP",
-    "STATS.CPP",
+    // "STATS.CPP", -- excluded (non-essential),
     "STRAW.CPP",
     "STUB.CPP",
     "SUPER.CPP",
@@ -438,20 +438,20 @@ const code_sources: []const []const u8 = &.{
     "TACTION.CPP",
     "TARCOM.CPP",
     "TARGET.CPP",
-    "TCPIP.CPP",
+    // "TCPIP.CPP", -- excluded (non-essential),
     "TDATA.CPP",
     "TEAM.CPP",
     "TEAMTYPE.CPP",
     "TECHNO.CPP",
     // TEMP.CPP -- excluded (patch notes file, not compilable source)
     "TEMPLATE.CPP",
-    "TENMGR.CPP",
+    // "TENMGR.CPP", -- excluded (non-essential),
     "TERRAIN.CPP",
     "TEVENT.CPP",
     "TEXTBTN.CPP",
     "THEME.CPP",
     "TOGGLE.CPP",
-    "TOOLTIP.CPP",
+    // "TOOLTIP.CPP", -- excluded (non-essential),
     "TRACKER.CPP",
     "TRIGGER.CPP",
     "TRIGTYPE.CPP",
@@ -479,12 +479,12 @@ const code_sources: []const []const u8 = &.{
     // WOL_MAIN.CPP -- excluded
     // WOL_OPT.CPP -- excluded
     // WOLAPIOB.CPP -- excluded
-    "WOLEDIT.CPP",
+    // "WOLEDIT.CPP", -- excluded (non-essential),
     // WOLSTRNG.CPP -- excluded
     "WRITEPCX.CPP",
-    "WSPIPX.CPP",
-    "WSPROTO.CPP",
-    "WSPUDP.CPP",
+    // "WSPIPX.CPP", -- excluded (non-essential),
+    // "WSPROTO.CPP", -- excluded (non-essential),
+    // "WSPUDP.CPP", -- excluded (non-essential),
     "XPIPE.CPP",
     "XSTRAW.CPP",
 };
