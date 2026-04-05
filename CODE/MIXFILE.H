@@ -41,7 +41,7 @@ typedef int bool;
 #include "buff.h"
 
 template<class T>
-class MixFileClass : public Node<MixFileClass>
+class MixFileClass : public Node<MixFileClass<T>>
 {
 	public:
 		char const * Filename;			// Filename of mixfile.

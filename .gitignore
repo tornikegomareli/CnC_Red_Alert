@@ -12,3 +12,4 @@ macredalert/zig-out/
 
 # Claude
 CLAUDE.md
+*.o
