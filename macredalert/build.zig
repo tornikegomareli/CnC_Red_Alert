@@ -121,9 +121,11 @@ pub fn build(b: *std.Build) void {
         "-ferror-limit=50",
     };
 
-    // CODE/ sources get precompile.h force-included (monolithic include model)
+    // CODE/ sources get FUNCTION.H force-included (monolithic include model)
+    // Note: -include causes Zig 0.15 CacheCheckFailed but compilation succeeds
     const code_cxx_flags: []const []const u8 = cxx_flags ++ &[_][]const u8{
-        "-include", "precompile.h",
+        "-include", "fwd_types.h",
+        "-include", "function.h",
     };
 
     // =========================================================================
@@ -135,10 +137,8 @@ pub fn build(b: *std.Build) void {
         .flags = code_cxx_flags,
     });
 
-    // WIN32LIB sources get fwd_types.h but NOT FUNCTION.H
-    const win32lib_cxx_flags: []const []const u8 = cxx_flags ++ &[_][]const u8{
-        "-include", "fwd_types.h",
-    };
+    // WIN32LIB sources — fwd_types.h comes via windows.h stub, no FUNCTION.H
+    const win32lib_cxx_flags: []const []const u8 = cxx_flags;
 
     // =========================================================================
     // Group 2: Original WIN32LIB/ sources (excluding files we replace)
@@ -476,10 +476,10 @@ const code_sources: []const []const u8 = &.{
 
 // WIN32LIB/ sources — excluding SRCDEBUG/, OLD/, TEST/, EXAMPLE/, and files we replace
 const win32lib_sources: []const []const u8 = &.{
-    // AUDIO (SOUNDIO.CPP will be replaced by platform layer in Phase 5)
-    "AUDIO/SOUNDINT.CPP",
-    "AUDIO/SOUNDIO.CPP",
-    "AUDIO/SOUNDLCK.CPP",
+    // AUDIO (will be replaced by Raylib audio in Phase 5)
+    // "AUDIO/SOUNDINT.CPP",
+    // "AUDIO/SOUNDIO.CPP",
+    // "AUDIO/SOUNDLCK.CPP",
     // DIPTHONG
     "DIPTHONG/_DIPTABL.CPP",
     "DIPTHONG/DIPTHONG.CPP",
@@ -488,7 +488,7 @@ const win32lib_sources: []const []const u8 = &.{
     "DRAWBUFF/BUFFGLBL.CPP",
     "DRAWBUFF/DRAWRECT.CPP",
     "DRAWBUFF/GBUFFER.CPP",
-    "DRAWBUFF/ICONCACH.CPP",
+    // "DRAWBUFF/ICONCACH.CPP", -- includes game headers that need FUNCTION.H
     "DRAWBUFF/REGIONSZ.CPP",
     // FONT
     "FONT/FONT.CPP",
@@ -497,54 +497,54 @@ const win32lib_sources: []const []const u8 = &.{
     // IFF
     "IFF/IFF.CPP",
     "IFF/LOAD.CPP",
-    "IFF/LOADPCX.CPP",
+    // "IFF/LOADPCX.CPP", -- includes function.h, needs CODE/ treatment
     "IFF/LOADPICT.CPP",
     "IFF/WRITELBM.CPP",
-    "IFF/WRITEPCX.CPP",
-    // KEYBOARD
-    "KEYBOARD/KEYBOARD.CPP",
-    "KEYBOARD/MOUSE.CPP",
+    // "IFF/WRITEPCX.CPP", -- duplicated in CODE/
+    // KEYBOARD (will be replaced by Raylib input in Phase 4)
+    // "KEYBOARD/KEYBOARD.CPP",
+    // "KEYBOARD/MOUSE.CPP",
     // MEM
     "MEM/ALLOC.CPP",
     "MEM/MEM.CPP",
     "MEM/NEWDEL.CPP",
-    // MISC (DDRAW.CPP will be replaced by platform layer in Phase 3)
-    "MISC/DDRAW.CPP",
+    // MISC (DDRAW.CPP will be replaced by Raylib video in Phase 3)
+    // "MISC/DDRAW.CPP",
     "MISC/DELAY.CPP",
     "MISC/EXIT.CPP",
     "MISC/FINDARGV.CPP",
     "MISC/IRANDOM.CPP",
     "MISC/LIB.CPP",
     "MISC/VERSION.CPP",
-    // MONO
-    "MONO/MONO.CPP",
-    // MOVIE
-    "MOVIE/MOVIE.CPP",
+    // MONO (debug display not needed)
+    // "MONO/MONO.CPP",
+    // MOVIE (MCI not available, replaced later)
+    // "MOVIE/MOVIE.CPP",
     // PALETTE
     "PALETTE/LOADPAL.CPP",
     "PALETTE/MORPHPAL.CPP",
     "PALETTE/PALETTE.CPP",
-    // PLAYCD
-    "PLAYCD/GETCD.CPP",
-    "PLAYCD/REDBOOK.CPP",
-    // PROFILE
-    "PROFILE/PROFILE.CPP",
-    "PROFILE/WPROFILE.CPP",
-    // RAWFILE
-    "RAWFILE/CCFILE.CPP",
-    "RAWFILE/RAWFILE.CPP",
+    // PLAYCD (CD audio not needed on macOS)
+    // "PLAYCD/GETCD.CPP",
+    // "PLAYCD/REDBOOK.CPP",
+    // PROFILE (both files have issues - will address in later phase)
+    // "PROFILE/PROFILE.CPP",
+    // "PROFILE/WPROFILE.CPP",
+    // RAWFILE (CCFILE duplicated in CODE/, RAWFILE will be replaced in Phase 2)
+    // "RAWFILE/CCFILE.CPP",
+    // "RAWFILE/RAWFILE.CPP",
     // SHAPE
     "SHAPE/GETSHAPE.CPP",
     "SHAPE/PRIOINIT.CPP",
     // TILE
     "TILE/ICONSET.CPP",
-    // TIMER (TIMER.CPP will be replaced in Phase 6)
-    "TIMER/TIMER.CPP",
-    "TIMER/TIMERDWN.CPP",
-    "TIMER/TIMERINI.CPP",
-    // WINCOMM
-    "WINCOMM/MODEMREG.CPP",
-    "WINCOMM/WINCOMM.CPP",
+    // TIMER (will be replaced in Phase 6)
+    // "TIMER/TIMER.CPP",
+    // "TIMER/TIMERDWN.CPP",
+    // "TIMER/TIMERINI.CPP",
+    // WINCOMM (serial modem not needed)
+    // "WINCOMM/MODEMREG.CPP",
+    // "WINCOMM/WINCOMM.CPP",
     // WSA
     "WSA/WSA.CPP",
     // WW_WIN
