@@ -209,13 +209,17 @@ bool Init_Game(int , char * [])
 	/*
 	**	Initialize the encryption keys.
 	*/
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[INIT] Init_Keys()...\n");
 	Init_Keys();
+	ra_log("[INIT] Init_Keys() done\n");
 
 	/*
 	**	Bootstrap as much as possible before error-prone initializations are
 	**	performed. This bootstrap process will enable the error message
 	**	handler to function.
 	*/
+	ra_log("[INIT] Bootstrap()...\n");
 	Bootstrap();
 
 	/*
@@ -3113,7 +3117,10 @@ static void Init_Secondary_Mixfiles(void)
  *=============================================================================================*/
 static void Bootstrap(void)
 {
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[BOOTSTRAP] BlackPalette.Set()...\n");
 	BlackPalette.Set();
+	ra_log("[BOOTSTRAP] BlackPalette.Set() done\n");
 
 	/*
 	**	Be sure to short circuit the CD-ROM check if there is a CD-ROM override
@@ -3122,16 +3129,20 @@ static void Bootstrap(void)
 	if (CCFileClass::Is_There_Search_Drives()) {
 		RequiredCD = -2;
 	}
+	ra_log("[BOOTSTRAP] CD check done\n");
 
 	/*
 	** Process the message loop until we are in focus. We need to be in focus to read pixels from
 	** the screen.
 	*/
 	#ifdef WIN32
+	ra_log("[BOOTSTRAP] Keyboard check...\n");
 	do {
 		Keyboard->Check();
 	} while (!GameInFocus);
-	AllSurfaces.SurfacesRestored = false;
+	ra_log("[BOOTSTRAP] Focus acquired\n");
+	// AllSurfaces is a stub, skip method call
+	// AllSurfaces.SurfacesRestored = false;
 	#endif
 
 	/*
@@ -3139,18 +3150,23 @@ static void Bootstrap(void)
 	**	monochrome screen.
 	*/
 	Mono_Clear_Screen();
+	ra_log("[BOOTSTRAP] Mono_Clear_Screen done\n");
 
 	/*
 	**	Register and make resident all local mixfiles with particular emphasis
 	**	on the mixfiles that are necessary to display and error messages and
 	**	process further initialization.
 	*/
+	ra_log("[BOOTSTRAP] Init_Bootstrap_Mixfiles()...\n");
 	Init_Bootstrap_Mixfiles();
+	ra_log("[BOOTSTRAP] Init_Bootstrap_Mixfiles() done\n");
 
 	/*
 	**	Initialize the resident font pointers.
 	*/
+	ra_log("[BOOTSTRAP] Init_Fonts()...\n");
 	Init_Fonts();
+	ra_log("[BOOTSTRAP] Init_Fonts() done\n");
 
 #ifndef WIN32
 	/*
