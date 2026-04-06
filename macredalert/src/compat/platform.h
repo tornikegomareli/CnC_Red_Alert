@@ -482,6 +482,9 @@ typedef struct tagWNDCLASS {
 #define WM_ERASEBKGND       0x0014
 
 // Virtual key codes
+#define VK_LBUTTON          0x01
+#define VK_RBUTTON          0x02
+#define VK_MBUTTON          0x04
 #define VK_SHIFT            0x10
 #define VK_CONTROL          0x11
 #define VK_MENU             0x12

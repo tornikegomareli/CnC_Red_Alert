@@ -741,8 +741,7 @@ void *Build_Fading_Table(void const *palette, void const *dest, long color, long
     (void)palette; (void)color; (void)frac; return (void*)dest;
 }
 void Force_VM_Page_In(void *buffer, int length) { (void)buffer; (void)length; }
-int Get_Mouse_X(void) { return 0; }
-int Get_Mouse_Y(void) { return 0; }
+/* Get_Mouse_X/Y provided by raylib_input.cpp */
 int Get_Random_Mask(int maxval) { (void)maxval; return 0; }
 int Is_Icon_Cached(void const *icon_data, int icon) { (void)icon_data; (void)icon; return 0; }
 unsigned long Largest_Mem_Block(void) { return 64 * 1024 * 1024; }

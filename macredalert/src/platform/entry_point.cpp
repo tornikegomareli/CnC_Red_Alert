@@ -76,6 +76,38 @@ static void Convert_Palette_To_RGBA(unsigned char *indexed, unsigned char *rgba,
     }
 }
 
+// Shared state for render callback
+static Texture2D g_fbTexture = {0};
+static unsigned char *g_rgba_pixels = NULL;
+static int g_game_width = 640;
+static int g_game_height = 400;
+static bool g_render_ready = false;
+
+/*
+ * Called from Raylib_Poll_Input (inside the game's event loop)
+ * to update the display with the current framebuffer contents.
+ */
+extern "C" void Raylib_Render_Frame(void) {
+    if (!g_render_ready || !g_rgba_pixels) return;
+    unsigned char *game_buffer = (unsigned char *)(intptr_t)VisiblePage.Get_Offset();
+    if (game_buffer) {
+        Convert_Palette_To_RGBA(game_buffer, g_rgba_pixels,
+                                g_game_width, g_game_height, g_game_width);
+        UpdateTexture(g_fbTexture, g_rgba_pixels);
+    }
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    DrawTexturePro(
+        g_fbTexture,
+        (Rectangle){ 0, 0, (float)g_game_width, (float)g_game_height },
+        (Rectangle){ 0, 0, (float)(g_game_width * 2), (float)(g_game_height * 2) },
+        (Vector2){ 0, 0 }, 0.0f, WHITE
+    );
+    DrawFPS(g_game_width * 2 - 90, 10);
+    EndDrawing();
+}
+
 int main(int argc, char **argv) {
     g_log = fopen("ra_port.log", "w");
     ra_log("=== C&C Red Alert macOS Port ===\n");
@@ -131,87 +163,31 @@ int main(int argc, char **argv) {
 
     // Create Raylib texture for the game framebuffer
     Image fbImage = GenImageColor(GAME_WIDTH, GAME_HEIGHT, BLACK);
-    Texture2D fbTexture = LoadTextureFromImage(fbImage);
+    g_fbTexture = LoadTextureFromImage(fbImage);
     UnloadImage(fbImage);
-    unsigned char *rgba_pixels = (unsigned char *)calloc(GAME_WIDTH * GAME_HEIGHT * 4, 1);
+    g_rgba_pixels = (unsigned char *)calloc(GAME_WIDTH * GAME_HEIGHT * 4, 1);
+    g_game_width = GAME_WIDTH;
+    g_game_height = GAME_HEIGHT;
+    g_render_ready = true;
 
     // Get pointer to the game's visible page buffer
     extern GraphicBufferClass VisiblePage;
 
-    // Try to render something to prove the framebuffer pipeline works
+    // Run the game's main menu (Select_Game)
+    // This blocks in its own event loop, but our Fill_Buffer_From_System
+    // hook calls Raylib_Poll_Input which pumps Raylib events and renders.
     if (init_ok) {
-        extern GraphicViewPortClass HidPage;
-        extern GraphicViewPortClass SeenBuff;
-
-        // Try loading a title screen image into the framebuffer
-        ra_log("Trying to load title screen...\n");
-
-        // Try to retrieve and display TITLE.PCX or PROLOG.PCX
-        void const *title_data = MFCD::Retrieve("TITLE.CPS");
-        if (!title_data) title_data = MFCD::Retrieve("PROLOG.CPS");
-        if (!title_data) title_data = MFCD::Retrieve("GREYEARL.CPS");
-        ra_log("Title data: %p\n", title_data);
-
-        // Even without a title image, set a visible palette so we see SOMETHING
-        // Set palette to a gradient so non-black pixels show up
-        for (int i = 0; i < 256; i++) {
-            CurrentPalette[i*3+0] = i / 4;  // R
-            CurrentPalette[i*3+1] = i / 4;  // G
-            CurrentPalette[i*3+2] = i / 4;  // B
-        }
-
-        // Draw a test pattern directly to VisiblePage using game's graphics system
-        if (VisiblePage.Lock()) {
-            // Fill with a gradient pattern to verify the pipeline
-            unsigned char *buf = (unsigned char *)(intptr_t)VisiblePage.Get_Offset();
-            if (buf) {
-                for (int y = 0; y < GAME_HEIGHT; y++) {
-                    for (int x = 0; x < GAME_WIDTH; x++) {
-                        buf[y * GAME_WIDTH + x] = (unsigned char)((x + y) & 0xFF);
-                    }
-                }
-                ra_log("Test pattern written to VisiblePage\n");
-            }
-            VisiblePage.Unlock();
-        }
+        ra_log("Calling Select_Game()...\n");
+        extern bool Select_Game(bool);
+        Select_Game(true);
+        ra_log("Select_Game returned\n");
     }
 
-    ra_log("Entering main loop...\n");
+    // If we get here, Select_Game returned (game started or user quit)
+    ra_log("Game loop ended\n");
 
-    while (!WindowShouldClose()) {
-        // Convert game's 8-bit framebuffer to RGBA via palette
-        unsigned char *game_buffer = (unsigned char *)(intptr_t)VisiblePage.Get_Offset();
-        if (game_buffer) {
-            Convert_Palette_To_RGBA(game_buffer, rgba_pixels,
-                                    GAME_WIDTH, GAME_HEIGHT, GAME_WIDTH);
-            UpdateTexture(fbTexture, rgba_pixels);
-        }
-
-        BeginDrawing();
-        ClearBackground(BLACK);
-
-        // Draw the game's framebuffer scaled to window
-        DrawTexturePro(
-            fbTexture,
-            (Rectangle){ 0, 0, (float)GAME_WIDTH, (float)GAME_HEIGHT },
-            (Rectangle){ 0, 0, (float)(GAME_WIDTH * SCALE), (float)(GAME_HEIGHT * SCALE) },
-            (Vector2){ 0, 0 }, 0.0f, WHITE
-        );
-
-        // Overlay status
-        DrawText("C&C Red Alert — macOS Port", 10, 10, 20, RAYWHITE);
-        if (init_ok) {
-            DrawText("Init_Game() OK — Displaying game framebuffer", 10, 35, 14, GREEN);
-        } else {
-            DrawText("Init_Game() FAILED", 10, 35, 14, RED);
-        }
-        DrawFPS(GAME_WIDTH * SCALE - 90, 10);
-
-        EndDrawing();
-    }
-
-    free(rgba_pixels);
-    UnloadTexture(fbTexture);
+    free(g_rgba_pixels);
+    UnloadTexture(g_fbTexture);
     CloseWindow();
     if (g_log) fclose(g_log);
     return 0;

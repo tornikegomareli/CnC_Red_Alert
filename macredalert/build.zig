@@ -172,6 +172,7 @@ pub fn build(b: *std.Build) void {
         .root = b.path("src/platform"),
         .files = &.{
             "entry_point.cpp",
+            "raylib_input.cpp",
         },
         .flags = cxx_flags,
     });
