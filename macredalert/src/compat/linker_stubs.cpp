@@ -814,9 +814,4 @@ const char *TXT_WOL_PROPOSE_DRAW_CONFIRM = "";
 const char *TXT_WOL_RETRACT_DRAW = "";
 
 /* ================================================================== */
-/*  Entry point                                                        */
-/* ================================================================== */
-int main(int argc, char **argv) {
-    (void)argc; (void)argv;
-    return 0;
-}
+/* main() provided by src/platform/entry_point.cpp */

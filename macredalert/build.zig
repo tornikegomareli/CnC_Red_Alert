@@ -171,7 +171,7 @@ pub fn build(b: *std.Build) void {
     root_module.addCSourceFiles(.{
         .root = b.path("src/platform"),
         .files = &.{
-            // Will be populated as we implement each phase
+            "entry_point.cpp",
         },
         .flags = cxx_flags,
     });
