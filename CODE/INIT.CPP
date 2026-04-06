@@ -292,7 +292,8 @@ bool Init_Game(int , char * [])
 		CCFileClass rulesFile("RULES.INI");
 		ra_log("[INIT] RULES.INI available: %d\n", rulesFile.Is_Available());
 		if (rulesFile.Is_Available() && RuleINI.Load(rulesFile, false)) {
-			ra_log("[INIT] RULES.INI loaded, processing...\n");
+			ra_log("[INIT] RULES.INI loaded (%d bytes), processing...\n", rulesFile.Size());
+			ra_log("[INIT] Calling Rule.Process()...\n");
 			Rule.Process(RuleINI);
 			ra_log("[INIT] RULES.INI processed!\n");
 		} else {
