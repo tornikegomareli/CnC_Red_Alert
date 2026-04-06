@@ -65,12 +65,12 @@ class CRCEngine {
 	public:
 
 		// Constructor for CRC engine (it can have an override initial CRC value).
-		CRCEngine(long initial=0) : CRC(initial), Index(0) {
+		CRCEngine(long initial=0) : CRC((int32_t)initial), Index(0) {
 			StagingBuffer.Composite = 0;
 		};
 
 		// Fetches CRC value.
-		long operator() (void) const {return(Value());};
+		long operator() (void) const {return((long)Value());};
 
 		// Submits one byte sized datum to the CRC accumulator.
 		void operator() (char datum);
@@ -79,7 +79,7 @@ class CRCEngine {
 		long operator() (void const * buffer, int length);
 
 		// Implicit conversion operator so this object appears like a 'long integer'.
-		operator long(void) const {return(Value());};
+		operator long(void) const {return((long)Value());};
 
 	protected:
 
@@ -87,33 +87,30 @@ class CRCEngine {
 			return(Index != 0);
 		};
 
-		long Value(void) const {
+		int32_t Value(void) const {
 			if (Buffer_Needs_Data()) {
-				return(_lrotl(CRC, 1) + StagingBuffer.Composite);
+				/* 32-bit rotate left by 1 + staging buffer */
+				uint32_t v = (uint32_t)CRC;
+				v = (v << 1) | (v >> 31);
+				return((int32_t)(v + (uint32_t)StagingBuffer.Composite));
 			}
 			return(CRC);
 		};
 
 		/*
-		**	Current accumulator of the CRC value. This value doesn't take into
-		**	consideration any pending data in the staging buffer.
+		**	Current CRC accumulator — MUST be 32-bit to match MIX file format.
 		*/
-		long CRC;
+		int32_t CRC;
 
-		/*
-		**	This is the sub index into the staging buffer used to keep track of
-		**	partial data blocks as they are submitted to the CRC engine.
-		*/
 		int Index;
 
 		/*
-		**	This is the buffer that holds the incoming partial data. When the buffer
-		**	is filled, the value is transformed into the CRC and the buffer is flushed
-		**	in preparation for additional data.
+		**	Staging buffer for partial data. MUST be 4 bytes (32-bit) to match
+		**	the original Watcom long size used in MIX file CRC computation.
 		*/
 		union {
-			long Composite;
-			char Buffer[sizeof(long)];
+			int32_t Composite;
+			char Buffer[4];
 		} StagingBuffer;
 };
 
