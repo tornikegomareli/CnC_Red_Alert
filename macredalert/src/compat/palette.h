@@ -71,15 +71,12 @@ public:
         return *this;
     }
 
-    // Set the hardware palette to this palette's values (stub on macOS)
+    // Set the hardware palette — copies to the extern C CurrentPalette array
+    // that the Raylib framebuffer converter reads from.
     void Set(int rate = 0, void (*callback)(void) = 0) const {
         (void)rate; (void)callback;
-        // Copy to CurrentPalette when "setting" the palette
-        if (this != &CurrentPalette) {
-            for (int i = 0; i < COLOR_COUNT; i++) {
-                ((PaletteClass &)CurrentPalette).Palette[i] = Palette[i];
-            }
-        }
+        extern void Palette_Set_Helper(void const *palette);
+        Palette_Set_Helper(&Palette[0]);
     }
 
     // Adjust all palette entries towards another palette by the given ratio (0-255)

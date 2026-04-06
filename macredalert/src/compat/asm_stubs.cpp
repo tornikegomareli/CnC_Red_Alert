@@ -205,6 +205,18 @@ void Set_Palette_Range(void *palette) {
     if (palette) memcpy(CurrentPalette, palette, 768);
 }
 
+} // end extern "C"
+
+/* Helper called from PaletteClass::Set() — bridges C++ class to C palette array.
+ * Uses C++ linkage to match the declaration in palette.h */
+extern unsigned char CurrentPalette[768];
+void Palette_Set_Helper(void const *palette) {
+    if (palette) memcpy(CurrentPalette, palette, 768);
+}
+
+extern "C" {
+/* Re-open extern "C" for any remaining stubs below */
+
 // ============================================================================
 // From various — Compression/decompression
 // ============================================================================
