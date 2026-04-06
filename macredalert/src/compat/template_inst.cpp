@@ -1,39 +1,10 @@
 /*
  * template_inst.cpp — Explicit template instantiations
- * The original Watcom build implicitly instantiated these.
- * Modern compilers need explicit instantiation for templates
- * defined in headers but used across translation units.
+ * VectorClass/DynamicVectorClass are now in VECTOR.CPP (where methods are defined).
+ * This file handles TFixedIHeapClass and MixFileClass.
  */
 
 #include "FUNCTION.H"
-
-// VectorClass instantiations
-template class VectorClass<CellClass>;
-template class VectorClass<ObjectClass*>;
-template class VectorClass<char const*>;
-template class VectorClass<char*>;
-template class VectorClass<void*>;
-template class VectorClass<TriggerClass*>;
-template class VectorClass<BaseNodeClass>;
-template class VectorClass<RemapControlType*>;
-template class VectorClass<FileEntryClass*>;
-template class VectorClass<MultiMission*>;
-template class VectorClass<NodeNameTag*>;
-template class VectorClass<PhoneEntryClass*>;
-
-// DynamicVectorClass instantiations
-template class DynamicVectorClass<ObjectClass*>;
-template class DynamicVectorClass<TriggerClass*>;
-template class DynamicVectorClass<char const*>;
-template class DynamicVectorClass<char*>;
-template class DynamicVectorClass<void*>;
-template class DynamicVectorClass<BaseNodeClass>;
-template class DynamicVectorClass<RemapControlType*>;
-template class DynamicVectorClass<PhoneEntryClass*>;
-template class DynamicVectorClass<FileEntryClass*>;
-template class DynamicVectorClass<MultiMission*>;
-template class DynamicVectorClass<NodeNameTag*>;
-// DynamicVectorClass<EgoClass*> already instantiated in FUNCTION.H
 
 // TFixedIHeapClass instantiations
 template class TFixedIHeapClass<AircraftClass>;

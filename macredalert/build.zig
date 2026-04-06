@@ -203,6 +203,7 @@ pub fn build(b: *std.Build) void {
         .root_module = root_module,
     });
 
+
     b.installArtifact(exe);
 
     // Run step: zig build run -- [args]
