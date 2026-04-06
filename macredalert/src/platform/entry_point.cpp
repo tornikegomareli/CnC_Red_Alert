@@ -43,15 +43,24 @@ int main(int argc, char **argv) {
 
     // Test POSIX file I/O through Win32 API shim
     {
-        HANDLE h = CreateFile("REDALERT.MIX", GENERIC_READ, FILE_SHARE_READ,
-                              NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (h != INVALID_HANDLE_VALUE && h != NULL) {
-            DWORD size = GetFileSize(h, NULL);
-            printf("[FILE I/O] REDALERT.MIX opened! Size: %u bytes\n", size);
-            CloseHandle(h);
-        } else {
-            printf("[FILE I/O] REDALERT.MIX not found (need game data files in working dir)\n");
+        FILE *log = fopen("ra_port.log", "w");
+        const char *test_files[] = { "general.mix", "conquer.mix", "scores.mix", "cclocal.mix", NULL };
+        for (int f = 0; test_files[f]; f++) {
+            HANDLE h = CreateFile(test_files[f], GENERIC_READ, FILE_SHARE_READ,
+                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+            if (h != INVALID_HANDLE_VALUE && h != NULL) {
+                DWORD size = GetFileSize(h, NULL);
+                if(log) fprintf(log, "[OK] %s: %u bytes\n", test_files[f], size);
+                unsigned char header[4] = {0};
+                DWORD bytesRead = 0;
+                ReadFile(h, header, 4, &bytesRead, NULL);
+                if(log) fprintf(log, "  Header: %02X %02X %02X %02X\n", header[0], header[1], header[2], header[3]);
+                CloseHandle(h);
+            } else {
+                if(log) fprintf(log, "[MISS] %s not found\n", test_files[f]);
+            }
         }
+        if(log) { fclose(log); log = NULL; }
     }
 
     // Test pattern: red/green/blue gradient

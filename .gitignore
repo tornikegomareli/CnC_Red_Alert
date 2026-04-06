@@ -13,3 +13,6 @@ macredalert/zig-out/
 # Claude
 CLAUDE.md
 *.o
+*.mix
+*.ini
+ra_port.log
