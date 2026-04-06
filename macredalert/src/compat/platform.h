@@ -19,6 +19,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <fnmatch.h>
 
 // ============================================================================
 // Additional basic types
@@ -258,7 +260,9 @@ typedef UINT                MMRESULT;
 #define CREATE_ALWAYS       2
 #define OPEN_EXISTING       3
 #define OPEN_ALWAYS         4
-#define FILE_ATTRIBUTE_NORMAL 0x80
+#define FILE_ATTRIBUTE_NORMAL    0x80
+#define FILE_ATTRIBUTE_READONLY  0x00000001
+#define FILE_ATTRIBUTE_DIRECTORY 0x00000010
 #define FILE_BEGIN          0
 #define FILE_CURRENT        1
 #define FILE_END            2
@@ -657,26 +661,109 @@ static inline MMRESULT timeSetEvent(UINT d, UINT r, LPTIMECALLBACK cb, DWORD u, 
 static inline MMRESULT timeKillEvent(UINT id) { (void)id; return 0; }
 
 // File I/O (stubs — will be replaced by POSIX in Phase 2)
+/*
+ * File I/O — POSIX implementation of Win32 file API
+ * HANDLE stores a file descriptor as (void*)(intptr_t)(fd+1), with NULL = invalid.
+ * We add 1 so that fd=0 (stdin) maps to non-NULL.
+ */
+#define _FD_TO_HANDLE(fd) ((HANDLE)(intptr_t)((fd) + 1))
+#define _HANDLE_TO_FD(h)  ((int)((intptr_t)(h) - 1))
+#define _IS_VALID_HANDLE(h) ((h) != NULL && (h) != INVALID_HANDLE_VALUE)
+
 static inline HANDLE CreateFileA(LPCSTR name, DWORD access, DWORD share,
     void *sec, DWORD disp, DWORD flags, HANDLE tmpl) {
-    (void)name; (void)access; (void)share; (void)sec; (void)disp; (void)flags; (void)tmpl;
-    return INVALID_HANDLE_VALUE;
+    (void)share; (void)sec; (void)flags; (void)tmpl;
+    if (!name) return INVALID_HANDLE_VALUE;
+
+    /* Normalize backslash paths */
+    char path[512];
+    strncpy(path, name, sizeof(path)-1);
+    path[sizeof(path)-1] = '\0';
+    for (char *p = path; *p; p++) { if (*p == '\\') *p = '/'; }
+
+    int oflags = 0;
+    if ((access & (GENERIC_READ|GENERIC_WRITE)) == (GENERIC_READ|GENERIC_WRITE))
+        oflags = O_RDWR;
+    else if (access & GENERIC_WRITE)
+        oflags = O_WRONLY;
+    else
+        oflags = O_RDONLY;
+
+    if (disp == CREATE_ALWAYS) oflags |= O_CREAT | O_TRUNC;
+    else if (disp == OPEN_ALWAYS) oflags |= O_CREAT;
+    /* OPEN_EXISTING: no extra flags */
+
+    int fd = open(path, oflags, 0666);
+    if (fd < 0) return INVALID_HANDLE_VALUE;
+    return _FD_TO_HANDLE(fd);
 }
 #define CreateFile CreateFileA
-static inline BOOL ReadFile(HANDLE h, LPVOID buf, DWORD bytes, LPDWORD read, void *ovl) {
-    (void)h; (void)buf; (void)bytes; (void)read; (void)ovl; return FALSE;
+
+static inline BOOL ReadFile(HANDLE h, LPVOID buf, DWORD bytes, LPDWORD bytesRead, void *ovl) {
+    (void)ovl;
+    if (!_IS_VALID_HANDLE(h)) return FALSE;
+    ssize_t n = read(_HANDLE_TO_FD(h), buf, bytes);
+    if (n < 0) { if (bytesRead) *bytesRead = 0; return FALSE; }
+    if (bytesRead) *bytesRead = (DWORD)n;
+    return TRUE;
 }
-static inline BOOL WriteFile(HANDLE h, LPCVOID buf, DWORD bytes, LPDWORD written, void *ovl) {
-    (void)h; (void)buf; (void)bytes; (void)written; (void)ovl; return FALSE;
+
+static inline BOOL WriteFile(HANDLE h, LPCVOID buf, DWORD bytes, LPDWORD bytesWritten, void *ovl) {
+    (void)ovl;
+    if (!_IS_VALID_HANDLE(h)) return FALSE;
+    ssize_t n = write(_HANDLE_TO_FD(h), buf, bytes);
+    if (n < 0) { if (bytesWritten) *bytesWritten = 0; return FALSE; }
+    if (bytesWritten) *bytesWritten = (DWORD)n;
+    return TRUE;
 }
+
 static inline DWORD SetFilePointer(HANDLE h, LONG dist, LPLONG high, DWORD method) {
-    (void)h; (void)dist; (void)high; (void)method; return 0xFFFFFFFF;
+    (void)high;
+    if (!_IS_VALID_HANDLE(h)) return 0xFFFFFFFF;
+    int whence = SEEK_SET;
+    if (method == FILE_CURRENT) whence = SEEK_CUR;
+    else if (method == FILE_END) whence = SEEK_END;
+    off_t pos = lseek(_HANDLE_TO_FD(h), dist, whence);
+    if (pos < 0) return 0xFFFFFFFF;
+    return (DWORD)pos;
 }
-static inline BOOL CloseHandle(HANDLE h) { (void)h; return FALSE; }
-static inline DWORD GetFileSize(HANDLE h, LPDWORD high) { (void)h; (void)high; return 0xFFFFFFFF; }
-static inline BOOL DeleteFileA(LPCSTR name) { (void)name; return FALSE; }
+
+static inline BOOL CloseHandle(HANDLE h) {
+    if (!_IS_VALID_HANDLE(h)) return FALSE;
+    return close(_HANDLE_TO_FD(h)) == 0;
+}
+
+static inline DWORD GetFileSize(HANDLE h, LPDWORD high) {
+    if (high) *high = 0;
+    if (!_IS_VALID_HANDLE(h)) return 0xFFFFFFFF;
+    struct stat st;
+    if (fstat(_HANDLE_TO_FD(h), &st) != 0) return 0xFFFFFFFF;
+    return (DWORD)st.st_size;
+}
+
+static inline BOOL DeleteFileA(LPCSTR name) {
+    if (!name) return FALSE;
+    char path[512];
+    strncpy(path, name, sizeof(path)-1);
+    path[sizeof(path)-1] = '\0';
+    for (char *p = path; *p; p++) { if (*p == '\\') *p = '/'; }
+    return unlink(path) == 0;
+}
 #define DeleteFile DeleteFileA
-static inline DWORD GetFileAttributesA(LPCSTR name) { (void)name; return 0xFFFFFFFF; }
+
+static inline DWORD GetFileAttributesA(LPCSTR name) {
+    if (!name) return 0xFFFFFFFF;
+    char path[512];
+    strncpy(path, name, sizeof(path)-1);
+    path[sizeof(path)-1] = '\0';
+    for (char *p = path; *p; p++) { if (*p == '\\') *p = '/'; }
+    struct stat st;
+    if (stat(path, &st) != 0) return 0xFFFFFFFF;
+    DWORD attr = FILE_ATTRIBUTE_NORMAL;
+    if (S_ISDIR(st.st_mode)) attr |= FILE_ATTRIBUTE_DIRECTORY;
+    if (!(st.st_mode & S_IWUSR)) attr |= FILE_ATTRIBUTE_READONLY;
+    return attr;
+}
 #define GetFileAttributes GetFileAttributesA
 static inline DWORD GetLastError(void) { return 0; }
 static inline void SetLastError(DWORD err) { (void)err; }

@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "platform.h"
 #include "raylib.h"
 
 // Game's original entry — declared in FUNCTION.H
@@ -39,6 +40,19 @@ int main(int argc, char **argv) {
     printf("C&C Red Alert — macOS Raylib Port\n");
     printf("Window: %dx%d (game: %dx%d)\n", GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE, GAME_WIDTH, GAME_HEIGHT);
     printf("Press ESC to exit.\n");
+
+    // Test POSIX file I/O through Win32 API shim
+    {
+        HANDLE h = CreateFile("REDALERT.MIX", GENERIC_READ, FILE_SHARE_READ,
+                              NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (h != INVALID_HANDLE_VALUE && h != NULL) {
+            DWORD size = GetFileSize(h, NULL);
+            printf("[FILE I/O] REDALERT.MIX opened! Size: %u bytes\n", size);
+            CloseHandle(h);
+        } else {
+            printf("[FILE I/O] REDALERT.MIX not found (need game data files in working dir)\n");
+        }
+    }
 
     // Test pattern: red/green/blue gradient
     for (int y = 0; y < GAME_HEIGHT; y++) {
