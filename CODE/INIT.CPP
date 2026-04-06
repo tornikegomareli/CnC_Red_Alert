@@ -361,9 +361,8 @@ bool Init_Game(int , char * [])
 	/*
 	**	Initialize the text remap tables.
 	*/
-	ra_log("[INIT] Init_Color_Remaps()...\n");
-	Init_Color_Remaps();
-	ra_log("[INIT] Init_Color_Remaps() done\n");
+	ra_log("[INIT] Skipping Init_Color_Remaps() (needs CPS decompression fix)\n");
+	// Init_Color_Remaps();  // Skip for now — crashes in CPS/LCW decompression
 
 	/*
 	**	Get authorization to access the game.

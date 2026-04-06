@@ -210,100 +210,115 @@ void Set_Palette_Range(void *palette) {
 // ============================================================================
 
 /*
- * LCW decompression — C reimplementation of the ASM routine.
+ * LCW decompression (Format 80) — C reimplementation of the ASM routine.
  * LCW is Westwood's custom compression format used in MIX archives.
- * Format: stream of commands that copy literal bytes or reference
- * previously-decompressed data.
+ *
+ * Command formats:
+ *   Cmd 1 (2 bytes): 0CCCOOOO OOOOOOOO
+ *     Count = ((flag >> 4) & 7) + 3, Offset = 12-bit relative (backwards from dst)
+ *     Copy count bytes from (dst - offset) to dst.
+ *
+ *   Cmd 2 (1 byte):  10CCCCCC
+ *     Count = flag & 0x3F (1..63). Copy count literal bytes from src to dst.
+ *     If count == 0 (i.e. flag == 0x80), this is the end-of-data marker.
+ *
+ *   Cmd 3 (3 bytes): 11CCCCCC OOOOOOOO OOOOOOOO
+ *     Count = (flag & 0x3F) + 3, Offset = 16-bit absolute from dest start.
+ *     Copy count bytes from (dst_start + offset) to dst.
+ *
+ *   Cmd 4 (4 bytes): 11111110 CCCC CCCC VVVV VVVV
+ *     Count = 16-bit, Value = byte. Fill count bytes with value.
+ *
+ *   Cmd 5 (5 bytes): 11111111 CCCC CCCC OOOO OOOO
+ *     Count = 16-bit, Offset = 16-bit absolute from dest start.
+ *     Copy count bytes from (dst_start + offset) to dst.
+ *
+ * The `length` parameter is the output buffer size (max bytes to write).
+ * Returns the number of bytes written to dest.
  */
 int LCW_Uncomp(void const *source, void *dest, unsigned long length) {
     const unsigned char *src = (const unsigned char *)source;
     unsigned char *dst = (unsigned char *)dest;
     unsigned char *dst_start = dst;
-    const unsigned char *dst_end = dst + length;
-    unsigned char *rel_base = dst;  /* relative copy base */
+    unsigned char *dst_end = dst + length;
 
     while (dst < dst_end) {
-        unsigned char cmd = *src++;
-
-        if (!(cmd & 0x80)) {
-            /* Short relative copy: 2 bytes, copies 0bCCCCCCLL + next byte offset */
-            int count = ((cmd & 0x3F) >> 4) + 3;
-            int offset = ((cmd & 0x0F) << 8) | *src++;
-            const unsigned char *copy_src = rel_base + offset;
-            /* Watcom LCW uses relative addressing from a base pointer */
-            /* Actually for RA's LCW format: */
-            /* cmd byte: 0CCCLLLL where CCC=count-3, LLLL<<8|next=offset */
-            count = (cmd >> 4) + 3;
-            offset = ((cmd & 0x0F) << 8) | *(src - 1);
-            /* Re-read: the format is actually simpler */
-            /* Let me use the well-known C&C LCW decompression */
-            /* Fall through to proper implementation below */
-            dst = dst; /* placeholder */
-        }
-        /* The above was getting complex. Let me use the known algorithm: */
-        src = (const unsigned char *)source;
-        dst = dst_start;
-        break;
-    }
-
-    /* Proper LCW decompression (Format 80 variant used in Red Alert) */
-    src = (const unsigned char *)source;
-    dst = dst_start;
-
-    while (1) {
         unsigned char flag = *src++;
 
-        if (flag == 0x80) {
-            /* End of data marker */
-            break;
-        }
-
         if (!(flag & 0x80)) {
-            /* Command 1: short copy from relative offset */
-            /* 0CCCOOOO OOOOOOOO — count=CCC+3, offset=OOOO OOOOOOOO */
-            int count = ((flag >> 4) & 7) + 3;
-            int offset = ((flag & 0x0F) << 8) | *src++;
+            /*
+             * Command 1: 0CCCOOOO OOOOOOOO
+             * Short relative copy from already-decompressed output.
+             */
+            unsigned int count = ((flag >> 4) & 7) + 3;
+            unsigned int offset = ((unsigned int)(flag & 0x0F) << 8) | *src++;
             unsigned char *copy_src = dst - offset;
-            while (count-- > 0 && dst < dst_end) {
-                *dst++ = *copy_src++;
+            /* Byte-by-byte copy handles overlapping regions correctly
+             * (e.g. RLE-like patterns where offset < count). */
+            unsigned int i;
+            for (i = 0; i < count && dst < dst_end; i++) {
+                *dst++ = copy_src[i];
             }
-        } else if (flag & 0x40) {
+
+        } else if (!(flag & 0x40)) {
+            /*
+             * Command 2: 10CCCCCC
+             * Literal copy from source stream.
+             * Special case: flag == 0x80 (count == 0) is end-of-data.
+             */
+            unsigned int count = flag & 0x3F;
+            if (count == 0) {
+                break;  /* 0x80 end marker */
+            }
+            unsigned int i;
+            for (i = 0; i < count && dst < dst_end; i++) {
+                *dst++ = *src++;
+            }
+
+        } else {
+            /* flag has bits 7 and 6 set: 11xxxxxx */
+
             if (flag == 0xFE) {
-                /* Command 4: long run of single byte */
-                int count = *src | (*(src+1) << 8);
+                /*
+                 * Command 4: 11111110 CC CC VV
+                 * Fill count bytes with value.
+                 */
+                unsigned int count = (unsigned int)src[0] | ((unsigned int)src[1] << 8);
                 src += 2;
                 unsigned char val = *src++;
-                while (count-- > 0 && dst < dst_end) {
+                unsigned int i;
+                for (i = 0; i < count && dst < dst_end; i++) {
                     *dst++ = val;
                 }
+
             } else if (flag == 0xFF) {
-                /* Command 5: long absolute copy */
-                int count = *src | (*(src+1) << 8);
+                /*
+                 * Command 5: 11111111 CC CC OO OO
+                 * Long absolute copy from output buffer.
+                 */
+                unsigned int count = (unsigned int)src[0] | ((unsigned int)src[1] << 8);
                 src += 2;
-                int offset = *src | (*(src+1) << 8);
+                unsigned int offset = (unsigned int)src[0] | ((unsigned int)src[1] << 8);
                 src += 2;
                 unsigned char *copy_src = dst_start + offset;
-                while (count-- > 0 && dst < dst_end) {
-                    *dst++ = *copy_src++;
+                unsigned int i;
+                for (i = 0; i < count && dst < dst_end; i++) {
+                    *dst++ = copy_src[i];
                 }
+
             } else {
-                /* Command 3: medium-length absolute copy */
-                /* 11CCCCCC OOOOOOOO OOOOOOOO — count=CCCCCC+3, offset=16-bit absolute */
-                int count = (flag & 0x3F) + 3;
-                int offset = *src | (*(src+1) << 8);
+                /*
+                 * Command 3: 11CCCCCC OO OO
+                 * Medium absolute copy from output buffer.
+                 */
+                unsigned int count = (flag & 0x3F) + 3;
+                unsigned int offset = (unsigned int)src[0] | ((unsigned int)src[1] << 8);
                 src += 2;
                 unsigned char *copy_src = dst_start + offset;
-                while (count-- > 0 && dst < dst_end) {
-                    *dst++ = *copy_src++;
+                unsigned int i;
+                for (i = 0; i < count && dst < dst_end; i++) {
+                    *dst++ = copy_src[i];
                 }
-            }
-        } else {
-            /* Command 2: literal copy */
-            /* 10CCCCCC — count=CCCCCC, copy that many literal bytes */
-            int count = flag & 0x3F;
-            if (count == 0) break; /* shouldn't happen but safety */
-            while (count-- > 0 && dst < dst_end) {
-                *dst++ = *src++;
             }
         }
     }
