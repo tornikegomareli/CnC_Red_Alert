@@ -4823,7 +4823,7 @@ int HouseClass::Expert_AI(void)
 	for (UrgencyType u = URGENCY_CRITICAL; u >= URGENCY_LOW; u--) {
 		bool acted = false;
 
-		for (strat = STRATEGY_FIRST; strat < STRATEGY_COUNT; strat++) {
+		for (StrategyType strat = STRATEGY_FIRST; strat < STRATEGY_COUNT; strat++) {
 			if (urgency[strat] == u) {
 				switch (strat) {
 					case STRATEGY_BUILD_POWER:

@@ -124,20 +124,20 @@ unsigned int Fixed_To_Cardinal(unsigned int base, unsigned int fixed) {
     return (base * fixed) / 256;
 }
 
-int __cdecl Reverse_Long(int value) {
+long __cdecl Reverse_Long(long value) {
     return ((value & 0xFF) << 24) | ((value & 0xFF00) << 8) |
            ((value & 0xFF0000) >> 8) | ((value >> 24) & 0xFF);
 }
 
-int __cdecl Reverse_Short(int value) {
+short __cdecl Reverse_Short(short value) {
     return ((value & 0xFF) << 8) | ((value >> 8) & 0xFF);
 }
 
-long __cdecl Clip_Rect(int *x, int *y, int *dw, int *dh, int width, int height) {
+int __cdecl Clip_Rect(int *x, int *y, int *dw, int *dh, int width, int height) {
     (void)x; (void)y; (void)dw; (void)dh; (void)width; (void)height; return 0;
 }
 
-long __cdecl Confine_Rect(int *x, int *y, int dw, int dh, int width, int height) {
+int __cdecl Confine_Rect(int *x, int *y, int dw, int dh, int width, int height) {
     (void)x; (void)y; (void)dw; (void)dh; (void)width; (void)height; return 0;
 }
 
@@ -145,7 +145,7 @@ void __cdecl Fat_Put_Pixel(int x, int y, int color, int size, void *surface) {
     (void)x; (void)y; (void)color; (void)size; (void)surface;
 }
 
-void __cdecl Mem_Copy(void *source, void *dest, unsigned long bytes_to_copy) {
+void __cdecl Mem_Copy(void const *source, void *dest, unsigned long bytes_to_copy) {
     if (source && dest && bytes_to_copy) memmove(dest, source, bytes_to_copy);
 }
 
@@ -236,3 +236,19 @@ unsigned int __cdecl Square_Root(unsigned int value) {
 }
 
 } // extern "C"
+
+/*
+** Fancy_Text_Print overloads that accept plain unsigned fore color
+** instead of RemapControlType*. These just call through to the
+** RemapControlType* version with NULL (the drawing code handles it).
+*/
+#include "FUNCTION.H"
+
+void Fancy_Text_Print(char const *text, unsigned x, unsigned y, unsigned fore, unsigned back, TextPrintType flag, ...) {
+    (void)fore;
+    Fancy_Text_Print(text, x, y, (RemapControlType *)NULL, back, flag);
+}
+void Fancy_Text_Print(int text, unsigned x, unsigned y, unsigned fore, unsigned back, TextPrintType flag, ...) {
+    (void)fore;
+    Fancy_Text_Print(text, x, y, (RemapControlType *)NULL, back, flag);
+}

@@ -687,6 +687,11 @@ static inline DWORD GetShortPathNameA(LPCSTR l, LPSTR s, DWORD sz) { (void)l; (v
 typedef struct _WIN32_FIND_DATAA {
     DWORD dwFileAttributes;
     char cFileName[MAX_PATH];
+    char cAlternateFileName[14];
+    DWORD nFileSizeLow;
+    DWORD nFileSizeHigh;
+    FILETIME ftCreationTime;
+    FILETIME ftLastWriteTime;
 } WIN32_FIND_DATAA, *LPWIN32_FIND_DATAA;
 #define WIN32_FIND_DATA WIN32_FIND_DATAA
 static inline HANDLE FindFirstFileA(LPCSTR path, LPWIN32_FIND_DATAA data) { (void)path; (void)data; return INVALID_HANDLE_VALUE; }
@@ -1008,6 +1013,8 @@ struct find_t {
     char name[260];
     unsigned attrib;
     unsigned long size;
+    unsigned wr_date;
+    unsigned wr_time;
 };
 
 typedef BOOL (CALLBACK *DLGPROC)(HWND, UINT, WPARAM, LPARAM);
@@ -1132,8 +1139,10 @@ static inline void Set_Mouse_Cursor(int hotx, int hoty, void *cursor) { (void)ho
 static inline int Get_Mouse_State(void) { return 0; }
 
 /* Audio system stubs (module excluded, functions referenced from core game) */
-typedef int SampleType;
-typedef int SoundType;
+/* SampleType and SoundType are global variables in the original audio system,
+   used as booleans to check if the sound system is initialized */
+static inline int SampleType = 0;
+static inline int SoundType = 0;
 #define SAMPLE_NONE -1
 static inline int Play_Sample(void const *sample, int pri=0, int vol=0xFF, signed short pan=0) { (void)sample;(void)pri;(void)vol;(void)pan; return -1; }
 static inline int Is_Sample_Playing(void const *sample) { (void)sample; return 0; }
@@ -1152,5 +1161,124 @@ static inline int Sound_Callback(void *obj, int event, int val, void *data) { (v
 static inline int Audio_Init(void *hwnd, int bits, int stereo, int rate, int reverse) { (void)hwnd;(void)bits;(void)stereo;(void)rate;(void)reverse; return 0; }
 typedef void (*Audio_Focus_Loss_Func_Type)(void);
 static inline int StreamLowImpact = 0;
+
+/* HRESULT macro */
+#ifndef FAILED
+#define FAILED(hr) ((long)(hr) < 0)
+#endif
+#ifndef SUCCEEDED
+#define SUCCEEDED(hr) ((long)(hr) >= 0)
+#endif
+
+/* Missing file attributes */
+#ifndef FILE_ATTRIBUTE_DIRECTORY
+#define FILE_ATTRIBUTE_DIRECTORY 0x00000010
+#endif
+#ifndef FILE_ATTRIBUTE_HIDDEN
+#define FILE_ATTRIBUTE_HIDDEN 0x00000002
+#endif
+#ifndef FILE_ATTRIBUTE_SYSTEM
+#define FILE_ATTRIBUTE_SYSTEM 0x00000004
+#endif
+#ifndef FILE_ATTRIBUTE_TEMPORARY
+#define FILE_ATTRIBUTE_TEMPORARY 0x00000100
+#endif
+
+/* Missing string functions */
+#ifndef _stricmp
+#define _stricmp strcasecmp
+#endif
+#ifndef _strlwr
+static inline char *_strlwr_impl(char *s) { if(s) for(char *p=s;*p;p++) *p=tolower(*p); return s; }
+#define _strlwr _strlwr_impl
+#endif
+
+/* strrev - reverse a string in place */
+static inline char *strrev(char *str) {
+    if (!str) return str;
+    char *p1 = str, *p2 = str;
+    while (*p2) p2++;
+    p2--;
+    while (p1 < p2) { char c = *p1; *p1++ = *p2; *p2-- = c; }
+    return str;
+}
+
+/* segread — declared but defined in i86.h which provides SREGS */
+/* Users should include <dos.h> or <i86.h> to get segread */
+
+/* diskfree_t */
+struct diskfree_t {
+    unsigned total_clusters;
+    unsigned avail_clusters;
+    unsigned sectors_per_cluster;
+    unsigned bytes_per_sector;
+};
+static inline unsigned _dos_getdiskfree(unsigned drive, struct diskfree_t *d) {
+    (void)drive; if(d) { d->total_clusters=1000; d->avail_clusters=500; d->sectors_per_cluster=8; d->bytes_per_sector=512; }
+    return 0;
+}
+
+/* Missing Win32 stubs */
+static inline int ToAscii(unsigned int vk, unsigned int scan, const unsigned char *state, unsigned short *buf, unsigned int flags) {
+    (void)vk;(void)scan;(void)state;(void)buf;(void)flags; return 0;
+}
+static inline HICON LoadIconA(HINSTANCE h, LPCSTR name) { (void)h;(void)name; return NULL; }
+#define LoadIcon LoadIconA
+static inline int DialogBoxA(HINSTANCE h, LPCSTR tmpl, HWND parent, DLGPROC proc) { (void)h;(void)tmpl;(void)parent;(void)proc; return 0; }
+#define DialogBox DialogBoxA
+static inline BOOL GetVolumeInformationA(LPCSTR root, LPSTR vol, DWORD volsz, LPDWORD serial, LPDWORD maxcomp, LPDWORD flags, LPSTR fs, DWORD fssz) {
+    (void)root;(void)vol;(void)volsz;(void)serial;(void)maxcomp;(void)flags;(void)fs;(void)fssz; return FALSE;
+}
+#define GetVolumeInformation GetVolumeInformationA
+static inline int GetDIBits(HDC dc, HBITMAP bmp, unsigned start, unsigned lines, LPVOID bits, LPBITMAPINFO bi, unsigned usage) {
+    (void)dc;(void)bmp;(void)start;(void)lines;(void)bits;(void)bi;(void)usage; return 0;
+}
+static inline int GetSystemPaletteEntries(HDC dc, unsigned start, unsigned count, LPPALETTEENTRY entries) {
+    (void)dc;(void)start;(void)count;(void)entries; return 0;
+}
+static inline HANDLE GetStockObject(int obj) { (void)obj; return NULL; }
+static inline int SetStretchBltMode(HDC dc, int mode) { (void)dc;(void)mode; return 0; }
+static inline BOOL StretchBlt(HDC dst, int dx, int dy, int dw, int dh, HDC src, int sx, int sy, int sw, int sh, DWORD rop) {
+    (void)dst;(void)dx;(void)dy;(void)dw;(void)dh;(void)src;(void)sx;(void)sy;(void)sw;(void)sh;(void)rop; return FALSE;
+}
+static inline int OpenFile(LPCSTR name, void *of, unsigned style) { (void)name;(void)of;(void)style; return -1; }
+static inline BOOL SetCommBreak(HANDLE h) { (void)h; return FALSE; }
+static inline BOOL ClearCommBreak(HANDLE h) { (void)h; return FALSE; }
+
+/* RGB macro if not defined */
+#ifndef RGB
+#define RGB(r,g,b) ((DWORD)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
+#endif
+
+/* TarComClass forward decl */
+#ifdef __cplusplus
+class TarComClass;
+#endif
+
+/* GAME_VERSION */
+#ifndef GAME_VERSION
+#define GAME_VERSION 0x00030000
+#endif
+
+/* PCX_HEADER stub */
+typedef struct { char dummy[128]; } PCX_HEADER;
+static inline int Write_PCX_File(char const *name, void *buf, void *pal, int w, int h) { (void)name;(void)buf;(void)pal;(void)w;(void)h; return 0; }
+
+/* find_t extra members */
+/* These are added here but find_t is defined earlier - we can't add members after the fact.
+   The code that uses wr_date/wr_time will need individual fixes. */
+
+/* COM port constants for modem code */
+#define COM1 1
+#define COM2 2
+#define COM3 3
+#define COM4 4
+#define COM5 5
+#define ASSUCCESS 0
+#define ASUSERABORT 1
+
+/* HMI modem stubs */
+static inline int HMWaitForOK(int timeout, void *data) { (void)timeout;(void)data; return 0; }
+static inline int HMSetUpEchoRoutine(void *func) { (void)func; return 0; }
 
 #endif // PLATFORM_H

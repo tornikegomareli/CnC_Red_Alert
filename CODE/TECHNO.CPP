@@ -4873,7 +4873,7 @@ void TechnoClass::Base_Is_Attacked(TechnoClass const * enemy)
 			}
 		}
 
-		for (lp = 0; lp < count; lp ++) {
+		for (int lp = 0; lp < count; lp ++) {
 			if (Percent_Chance(50)) {
 				defender[lp]->Assign_Mission(MISSION_RESCUE);
 			} else {

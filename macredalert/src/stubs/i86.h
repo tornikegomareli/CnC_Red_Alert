@@ -26,4 +26,6 @@ static inline int int386x(int intno, union REGS *in, union REGS *out, struct SRE
     (void)intno; (void)in; (void)out; (void)seg; return 0;
 }
 
+static inline void segread(struct SREGS *s) { if(s) { s->es=0; s->cs=0; s->ss=0; s->ds=0; } }
+
 #endif
