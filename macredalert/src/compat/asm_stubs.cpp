@@ -470,9 +470,104 @@ void Fancy_Text_Print(int text, unsigned x, unsigned y, unsigned fore, unsigned 
     Fancy_Text_Print(text, x, y, (RemapControlType *)NULL, back, flag);
 }
 
-/* Stub for Load_Title_Screen (WINSTUB.CPP excluded) */
+/*
+ * Load_Title_Screen — Load a PCX file into a graphics page.
+ * PCX is a simple RLE-compressed image format used for title screens.
+ */
 void Load_Title_Screen(char *name, GraphicViewPortClass *video_page, unsigned char *palette) {
-    (void)name; (void)video_page; (void)palette;
+    extern void ra_log(const char *fmt, ...);
+    ra_log("[PCX] Loading '%s'...\n", name ? name : "NULL");
+
+    if (!name || !video_page) return;
+
+    /* Open the file from MIX or filesystem */
+    CCFileClass file(name);
+    if (!file.Is_Available()) {
+        ra_log("[PCX] File not available\n");
+        return;
+    }
+
+    int file_size = file.Size();
+    ra_log("[PCX] File size: %d\n", file_size);
+
+    unsigned char *data = new unsigned char[file_size];
+    file.Open(READ);
+    file.Read(data, file_size);
+    file.Close();
+
+    /* PCX header: 128 bytes */
+    if (file_size < 128) { delete[] data; return; }
+
+    int xmin = data[4] | (data[5] << 8);
+    int ymin = data[6] | (data[7] << 8);
+    int xmax = data[8] | (data[9] << 8);
+    int ymax = data[10] | (data[11] << 8);
+    int width = xmax - xmin + 1;
+    int height = ymax - ymin + 1;
+    int bpp = data[3]; /* bits per pixel per plane */
+    int planes = data[65];
+
+    ra_log("[PCX] %dx%d, %d bpp, %d planes\n", width, height, bpp, planes);
+
+    /* Only handle 8-bit (256 color) PCX */
+    if (bpp != 8 || planes != 1) {
+        ra_log("[PCX] Unsupported format\n");
+        delete[] data;
+        return;
+    }
+
+    /* Decode RLE pixel data (starts at offset 128) */
+    unsigned char *src = data + 128;
+    unsigned char *src_end = data + file_size;
+
+    if (video_page->Lock()) {
+        unsigned char *dst_buf = (unsigned char *)(intptr_t)video_page->Get_Offset();
+        int dst_w = video_page->Get_Width();
+        int dst_h = video_page->Get_Height();
+        int pitch = dst_w + video_page->Get_XAdd();
+
+        int x = 0, y = 0;
+        while (src < src_end && y < height && y < dst_h) {
+            unsigned char byte = *src++;
+            int count = 1;
+            unsigned char value;
+
+            if ((byte & 0xC0) == 0xC0) {
+                count = byte & 0x3F;
+                if (src >= src_end) break;
+                value = *src++;
+            } else {
+                value = byte;
+            }
+
+            while (count-- > 0 && y < height && y < dst_h) {
+                if (x < dst_w) {
+                    dst_buf[y * pitch + x] = value;
+                }
+                x++;
+                if (x >= width) {
+                    x = 0;
+                    y++;
+                }
+            }
+        }
+        video_page->Unlock();
+        ra_log("[PCX] Decoded %dx%d pixels\n", width, y);
+    }
+
+    /* Read 256-color palette from end of file (last 769 bytes: 0x0C marker + 768 RGB) */
+    if (palette && file_size > 769) {
+        unsigned char *pal_start = data + file_size - 769;
+        if (*pal_start == 0x0C) {
+            /* PCX palette is 8-bit RGB, game uses 6-bit (0-63) */
+            for (int i = 0; i < 768; i++) {
+                palette[i] = pal_start[1 + i] >> 2;
+            }
+            ra_log("[PCX] Palette loaded (256 colors)\n");
+        }
+    }
+
+    delete[] data;
 }
 
 /* Stub for Write_PCX_File */

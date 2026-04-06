@@ -361,8 +361,24 @@ bool Init_Game(int , char * [])
 	/*
 	**	Initialize the text remap tables.
 	*/
-	ra_log("[INIT] Skipping Init_Color_Remaps() (needs CPS decompression fix)\n");
-	// Init_Color_Remaps();  // Skip for now — crashes in CPS/LCW decompression
+	ra_log("[INIT] Init_Color_Remaps()...\n");
+	/* Initialize color remap tables to identity (skip PALETTE.CPS loading
+	   which crashes due to stack overflow in CPS decompression).
+	   This means player colors won't be remapped, but the game will work. */
+	{
+		for (int pcolor = 0; pcolor < PCOLOR_COUNT; pcolor++) {
+			unsigned char *ptr = ColorRemaps[pcolor].RemapTable;
+			for (int c = 0; c < 256; c++) ptr[c] = (unsigned char)c;
+			ColorRemaps[pcolor].BrightColor = 15;  // white
+			ColorRemaps[pcolor].Color = (unsigned char)(pcolor * 16 + 8);
+		}
+		// Set up the greyscale remap and fading tables as identity
+		unsigned char *greyptr = GreyScheme.RemapTable;
+		for (int c = 0; c < 256; c++) greyptr[c] = (unsigned char)c;
+		GreyScheme.BrightColor = 15;
+		GreyScheme.Color = 14;
+	}
+	ra_log("[INIT] Init_Color_Remaps() done (identity tables)\n");
 
 	/*
 	**	Get authorization to access the game.
@@ -3012,6 +3028,18 @@ static void Init_Bootstrap_Mixfiles(void)
 		new MFCD("conquer.mix", &FastKey);
 		ok = MFCD::Cache("conquer.mix");
 		ra_log("[BOOTSTRAP_MIX] Cache(conquer.mix) = %d\n", ok);
+	}
+
+	// Register update.mix (CnCNet patch — may contain TITLE.PCX etc.)
+	if (CCFileClass("update.mix").Is_Available()) {
+		new MFCD("update.mix", &FastKey);
+		ok = MFCD::Cache("update.mix");
+		ra_log("[BOOTSTRAP_MIX] Cache(update.mix) = %d\n", ok);
+	}
+
+	// Register temperat.mix (theater graphics)
+	if (CCFileClass("temperat.mix").Is_Available()) {
+		new MFCD("temperat.mix", &FastKey);
 	}
 
 	RequiredCD = temp;
