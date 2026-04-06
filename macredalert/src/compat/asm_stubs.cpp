@@ -146,6 +146,7 @@ int Linear_Scale_To_Linear(void *src, void *dst, int sx, int sy, int dx, int dy,
  * Font format: header with character widths, then bitmap data.
  */
 long Buffer_Print(void *thisptr, const char *str, int x, int y, int fcolor, int bcolor) {
+
     GVPCLayout *vp = (GVPCLayout *)thisptr;
     unsigned char *dst = (unsigned char *)(intptr_t)vp->Offset;
     if (!dst || !str) return 0;
