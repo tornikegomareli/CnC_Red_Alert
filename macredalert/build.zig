@@ -212,7 +212,7 @@ pub fn build(b: *std.Build) void {
 // CODE/ sources — all .CPP files EXCEPT platform-specific ones we replace
 const code_sources: []const []const u8 = &.{
     // "_WSPROTO.CPP", -- excluded (non-essential),
-    "2KEYFRAM.CPP",
+    // "2KEYFRAM.CPP", -- duplicates KEYFRAME.CPP
     "AADATA.CPP",
     "ABSTRACT.CPP",
     "ADATA.CPP",
@@ -282,7 +282,7 @@ const code_sources: []const []const u8 = &.{
     // "DPMI.CPP", -- excluded
     "DRIVE.CPP",
     "DROP.CPP",
-    "DTABLE.CPP",
+    // "DTABLE.CPP", -- duplicates ADPCM tables
     "DYNAVEC.CPP",
     "EDIT.CPP",
     "EGOS.CPP",
@@ -331,9 +331,9 @@ const code_sources: []const []const u8 = &.{
     // "IPXCONN.CPP", -- excluded (non-essential),
     // "IPXGCONN.CPP", -- excluded (non-essential),
     // "IPXMGR.CPP", -- excluded (non-essential),
-    "ITABLE.CPP",
+    // "ITABLE.CPP", -- duplicates tables
     "JSHELL.CPP",
-    "KEY.CPP",
+    // "KEY.CPP", -- duplicates KEYBOARD.CPP
     "KEYBOARD.CPP",
     "KEYFRAME.CPP",
     "LAYER.CPP",
@@ -350,7 +350,7 @@ const code_sources: []const []const u8 = &.{
     "LZOPIPE.CPP",
     "LZOSTRAW.CPP",
     "LZW.CPP",
-    "LZWOTRAW.CPP",
+    // "LZWOTRAW.CPP", -- duplicates LZWSTRAW
     "LZWPIPE.CPP",
     "LZWSTRAW.CPP",
     "MAP.CPP",
@@ -514,16 +514,16 @@ const win32lib_sources: []const []const u8 = &.{
     "IFF/IFF.CPP",
     "IFF/LOAD.CPP",
     // "IFF/LOADPCX.CPP", -- includes function.h, needs CODE/ treatment
-    "IFF/LOADPICT.CPP",
+    // "IFF/LOADPICT.CPP", -- duplicated
     "IFF/WRITELBM.CPP",
     // "IFF/WRITEPCX.CPP", -- duplicated in CODE/
     // KEYBOARD (will be replaced by Raylib input in Phase 4)
     // "KEYBOARD/KEYBOARD.CPP",
     // "KEYBOARD/MOUSE.CPP",
     // MEM
-    "MEM/ALLOC.CPP",
-    "MEM/MEM.CPP",
-    "MEM/NEWDEL.CPP",
+    // "MEM/ALLOC.CPP", -- duplicated by CODE/ALLOC.CPP
+    // "MEM/MEM.CPP", -- duplicated
+    // "MEM/NEWDEL.CPP", -- duplicated
     // MISC (DDRAW.CPP will be replaced by Raylib video in Phase 3)
     // "MISC/DDRAW.CPP",
     "MISC/DELAY.CPP",

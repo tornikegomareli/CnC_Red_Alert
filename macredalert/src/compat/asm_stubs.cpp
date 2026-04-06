@@ -218,9 +218,7 @@ void *Mouse_Set_Cursor(void *thisptr, int hotx, int hoty, void *cursor) {
 // CRC
 // ============================================================================
 
-long __cdecl Calculate_CRC(void *buffer, long length) {
-    (void)buffer; (void)length; return 0;
-}
+/* Calculate_CRC defined in game code (INIT.CPP) */
 
 // ============================================================================
 // Misc math
