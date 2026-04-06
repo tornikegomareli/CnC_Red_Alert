@@ -7,6 +7,25 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* Forward declarations needed by CC_Draw_Shape */
+#pragma pack(push, 1)
+struct ShapeHeader {
+    unsigned short ShapeType;
+    unsigned char Height;
+    unsigned short Width;
+    unsigned char OriginalHeight;
+    unsigned short ShapeSize;
+    unsigned short DataLength;
+    unsigned char Colortable[16];
+};
+#pragma pack(pop)
+
+class GraphicViewPortClass;
+/* C++ linkage (matches GETSHAPE.CPP) */
+extern void * Extract_Shape(void const *buffer, int shape);
+/* C linkage (from our asm_stubs) */
+extern "C" int LCW_Uncomp(void const *source, void *dest, unsigned long length);
+
 extern "C" {
 
 // ============================================================================
@@ -121,8 +140,63 @@ int Linear_Scale_To_Linear(void *src, void *dst, int sx, int sy, int dx, int dy,
     return 0;
 }
 
+/*
+ * Buffer_Print — Render bitmap font text to a graphics viewport.
+ * The font data is pointed to by the global FontPtr.
+ * Font format: header with character widths, then bitmap data.
+ */
 long Buffer_Print(void *thisptr, const char *str, int x, int y, int fcolor, int bcolor) {
-    (void)thisptr; (void)str; (void)x; (void)y; (void)fcolor; (void)bcolor; return 0;
+    GVPCLayout *vp = (GVPCLayout *)thisptr;
+    unsigned char *dst = (unsigned char *)(intptr_t)vp->Offset;
+    if (!dst || !str) return 0;
+
+    int pitch = (int)(vp->Width + vp->XAdd);
+    int dst_w = (int)vp->Width;
+    int dst_h = (int)vp->Height;
+
+    extern void const *FontPtr;
+    if (!FontPtr) return 0;
+
+    /* Font header: first 2 bytes = max height, next is data offset table */
+    unsigned char *font = (unsigned char *)(void *)FontPtr;
+    int font_height = font[4] | (font[5] << 8);  /* character height */
+    if (font_height == 0) font_height = 8;
+
+    /* Character width table at offset 6 */
+    unsigned short *offset_table = (unsigned short *)(font + 6);
+
+    int cx = x;
+    while (*str) {
+        unsigned char ch = (unsigned char)*str++;
+        if (ch == '\n') { y += font_height; cx = x; continue; }
+        if (ch < 32) continue;
+
+        /* Get character data offset and width from font */
+        int char_offset = offset_table[ch];
+        int char_width = offset_table[ch + 1] - char_offset;
+        if (char_width <= 0 || char_width > 32) { cx += 4; continue; }
+
+        unsigned char *char_data = font + char_offset;
+        int bytes_per_row = (char_width + 7) / 8;
+
+        for (int row = 0; row < font_height; row++) {
+            int dy = y + row;
+            if (dy < 0 || dy >= dst_h) { char_data += bytes_per_row; continue; }
+            for (int col = 0; col < char_width; col++) {
+                int dx = cx + col;
+                if (dx < 0 || dx >= dst_w) continue;
+                int bit = (char_data[col / 8] >> (7 - (col % 8))) & 1;
+                if (bit) {
+                    dst[dy * pitch + dx] = (unsigned char)fcolor;
+                } else if (bcolor != 0) {
+                    dst[dy * pitch + dx] = (unsigned char)bcolor;
+                }
+            }
+            char_data += bytes_per_row;
+        }
+        cx += char_width + 1;
+    }
+    return (long)(cx - x);
 }
 
 void Buffer_Draw_Line(void *thisptr, int sx, int sy, int dx, int dy, unsigned char color) {
@@ -388,34 +462,90 @@ void __cdecl strtrim(char *str) {
     while (len > 0 && str[len-1] == ' ') { str[--len] = '\0'; }
 }
 
+} // end extern "C" — CC_Draw_Shape needs C++ linkage
+
 // ============================================================================
-// Shape drawing
+// Shape drawing (C++ linkage)
 // ============================================================================
 
+/*
+ * CC_Draw_Shape — Core shape/sprite rendering function.
+ * This is the most important graphics function in the game.
+ * Shapes are stored in SHP format with LCW-compressed frames.
+ */
 void CC_Draw_Shape(void const *shapefile, int shapenum, int x, int y,
     int window, const void *fadingdata, ...) {
-    (void)shapefile; (void)shapenum; (void)x; (void)y; (void)window; (void)fadingdata;
+    (void)fadingdata;
+
+    if (!shapefile) return;
+
+    /* Extract the specific frame from the shape file */
+    void *shape_ptr = Extract_Shape(shapefile, shapenum);
+    if (!shape_ptr) return;
+
+    /* Read shape header */
+    ShapeHeader *shape = (ShapeHeader *)shape_ptr;
+    int width = shape->Width;
+    int height = shape->Height;
+    int shape_type = shape->ShapeType;
+
+    if (width == 0 || height == 0) return;
+
+    /* Get the target viewport via the raw layout struct (LogicPage) */
+    extern GraphicViewPortClass *LogicPage;
+    if (!LogicPage) return;
+
+    /* Cast to raw layout — GraphicViewPortClass has same memory layout as GVPCLayout */
+    GVPCLayout *vp = (GVPCLayout *)(void *)LogicPage;
+    unsigned char *dst = (unsigned char *)(intptr_t)vp->Offset;
+    int dst_w = (int)vp->Width;
+    int dst_h = (int)vp->Height;
+    int pitch = (int)(vp->Width + vp->XAdd);
+
+    if (!dst) return;
+
+    /* Shape data starts after the header */
+    unsigned char *data = (unsigned char *)shape_ptr + sizeof(ShapeHeader);
+
+    /* For compressed shapes (type 0), the data is LCW compressed.
+     * For uncompressed (type 2), it's raw pixel data.
+     * For now, handle the simple case: draw raw pixel data. */
+    if (shape_type & 2) {
+        /* Uncompressed — direct pixel data */
+        for (int row = 0; row < height; row++) {
+            int dy = y + row;
+            if (dy < 0 || dy >= dst_h) { data += width; continue; }
+            for (int col = 0; col < width; col++) {
+                int dx = x + col;
+                unsigned char pixel = *data++;
+                if (pixel != 0 && dx >= 0 && dx < dst_w) {
+                    dst[dy * pitch + dx] = pixel;
+                }
+            }
+        }
+    } else {
+        /* LCW compressed shape — decompress to temp buffer then draw */
+        int buf_size = width * height;
+        unsigned char *temp = new unsigned char[buf_size];
+        memset(temp, 0, buf_size);
+        LCW_Uncomp(data, temp, buf_size);
+
+        for (int row = 0; row < height; row++) {
+            int dy = y + row;
+            if (dy < 0 || dy >= dst_h) continue;
+            for (int col = 0; col < width; col++) {
+                int dx = x + col;
+                unsigned char pixel = temp[row * width + col];
+                if (pixel != 0 && dx >= 0 && dx < dst_w) {
+                    dst[dy * pitch + dx] = pixel;
+                }
+            }
+        }
+        delete[] temp;
+    }
 }
 
-unsigned short Get_Build_Frame_Count(void const *dataptr) {
-    (void)dataptr; return 0;
-}
-
-unsigned short Get_Build_Frame_X(void const *dataptr) {
-    (void)dataptr; return 0;
-}
-
-unsigned short Get_Build_Frame_Y(void const *dataptr) {
-    (void)dataptr; return 0;
-}
-
-unsigned short Get_Build_Frame_Width(void const *dataptr) {
-    (void)dataptr; return 0;
-}
-
-unsigned short Get_Build_Frame_Height(void const *dataptr) {
-    (void)dataptr; return 0;
-}
+/* Get_Build_Frame_* provided by KEYFRAME.CPP */
 
 // ============================================================================
 // Audio codecs
@@ -463,8 +593,6 @@ unsigned int __cdecl Square_Root(unsigned int value) {
     if (r * r > value) r--;
     return r;
 }
-
-} // extern "C"
 
 /*
 ** Fancy_Text_Print overloads that accept plain unsigned fore color
