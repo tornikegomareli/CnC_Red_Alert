@@ -221,18 +221,23 @@ bool Init_Game(int , char * [])
 	*/
 	ra_log("[INIT] Bootstrap()...\n");
 	Bootstrap();
+	ra_log("[INIT] Bootstrap() returned\n");
 
 	/*
 	**	Check for an initialize a working mouse pointer. Display error and bail if
 	**	no mouse driver is installed.
 	*/
+	ra_log("[INIT] Init_Mouse()...\n");
 	Init_Mouse();
+	ra_log("[INIT] Init_Mouse() done\n");
 
 	/*
 	**	Initialize access to the CD-ROM and ensure that the CD is inserted. This can, and
 	**	most likely will, result in a visible prompt.
 	*/
+	ra_log("[INIT] Init_CDROM_Access()...\n");
 	Init_CDROM_Access();
+	ra_log("[INIT] Init_CDROM_Access() done\n");
 
 	if (Special.IsFromInstall) {
 		Load_Prolog_Page();
@@ -241,7 +246,9 @@ bool Init_Game(int , char * [])
 	/*
 	**	Register and cache any secondary mixfiles.
 	*/
+	ra_log("[INIT] Init_Secondary_Mixfiles()...\n");
 	Init_Secondary_Mixfiles();
+	ra_log("[INIT] Init_Secondary_Mixfiles() done\n");
 
 	/*
 	**	This is a special hack to initialize the heaps that must be in place before the
@@ -249,6 +256,7 @@ bool Init_Game(int , char * [])
 	**	of processing the rules.ini file, but that is a bit beyond the capabilities of
 	**	the rule parser routine (currently).
 	*/
+	ra_log("[INIT] Setting heaps...\n");
 	HouseTypes.Set_Heap(HOUSE_COUNT);
 	BuildingTypes.Set_Heap(STRUCT_COUNT);
 	AircraftTypes.Set_Heap(AIRCRAFT_COUNT);
@@ -262,6 +270,7 @@ bool Init_Game(int , char * [])
 	OverlayTypes.Set_Heap(OVERLAY_COUNT);
 	SmudgeTypes.Set_Heap(SMUDGE_COUNT);
 
+	ra_log("[INIT] Set_Heap done, calling Init_Heap...\n");
 	HouseTypeClass::Init_Heap();
 	BuildingTypeClass::Init_Heap();
 	AircraftTypeClass::Init_Heap();
@@ -278,8 +287,17 @@ bool Init_Game(int , char * [])
 	/*
 	**	Find and process any rules for this game.
 	*/
-	if (RuleINI.Load(CCFileClass("RULES.INI"), false)) {
-		Rule.Process(RuleINI);
+	ra_log("[INIT] Init_Heap done. Loading RULES.INI...\n");
+	{
+		CCFileClass rulesFile("RULES.INI");
+		ra_log("[INIT] RULES.INI available: %d\n", rulesFile.Is_Available());
+		if (rulesFile.Is_Available() && RuleINI.Load(rulesFile, false)) {
+			ra_log("[INIT] RULES.INI loaded, processing...\n");
+			Rule.Process(RuleINI);
+			ra_log("[INIT] RULES.INI processed!\n");
+		} else {
+			ra_log("[INIT] RULES.INI not found or failed to load\n");
+		}
 	}
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 	//  Aftermath runtime change 9/29/98
@@ -296,12 +314,16 @@ bool Init_Game(int , char * [])
 	/*
 	**	Initialize the game object heaps as well as other rules-dependant buffer allocations.
 	*/
+	ra_log("[INIT] Init_Heaps()...\n");
 	Init_Heaps();
+	ra_log("[INIT] Init_Heaps() done\n");
 
 	/*
 	**	Initialize the animation system.
 	*/
+	ra_log("[INIT] Anim_Init()...\n");
 	Anim_Init();
+	ra_log("[INIT] Anim_Init() done\n");
 
 #ifndef FIXIT_VERSION_3			//	WChat eliminated.
 #ifdef WIN32
@@ -324,10 +346,11 @@ bool Init_Game(int , char * [])
 	/*
 	**	Play the startup animation.
 	*/
+	ra_log("[INIT] Checking intro...\n");
 	if (!Special.IsFromInstall && !Special.IsFromWChat) {
 		VisiblePage.Clear();
-//		Mono_Printf("Playing Intro\n");
-		Play_Intro();
+		ra_log("[INIT] Skipping Play_Intro() (VQA not implemented)\n");
+		// Play_Intro(); // Skip — VQA player not implemented yet
 		memset(CurrentPalette, 0x01, 768);
 		WhitePalette.Set();
 	} else {
@@ -337,7 +360,9 @@ bool Init_Game(int , char * [])
 	/*
 	**	Initialize the text remap tables.
 	*/
+	ra_log("[INIT] Init_Color_Remaps()...\n");
 	Init_Color_Remaps();
+	ra_log("[INIT] Init_Color_Remaps() done\n");
 
 	/*
 	**	Get authorization to access the game.
@@ -397,8 +422,10 @@ bool Init_Game(int , char * [])
 	**	Read game options, so the GameSpeed is initialized when multiplayer
 	** dialogs are invoked.  (GameSpeed must be synchronized between systems.)
 	*/
+	ra_log("[INIT] Options.Load_Settings()...\n");
 	Options.Load_Settings();
 
+	ra_log("[INIT] *** Init_Game() COMPLETE! ***\n");
 	return(true);
 }
 
@@ -2847,8 +2874,12 @@ static void Init_Fonts(void)
  *=============================================================================================*/
 static void Init_CDROM_Access(void)
 {
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[CDROM] VisiblePage.Clear()...\n");
 	VisiblePage.Clear();
+	ra_log("[CDROM] HidPage.Clear()...\n");
 	HidPage.Clear();
+	ra_log("[CDROM] Clears done\n");
 
 #ifdef FIXIT_VERSION_3
 	//	Determine if we're going to be running from a DVD.
@@ -3185,6 +3216,7 @@ static void Bootstrap(void)
 	/*
 	**	Setup the keyboard processor in preparation for the game.
 	*/
+	ra_log("[BOOTSTRAP] Keyboard->Clear()...\n");
 	#ifdef WIN32
 		Keyboard->Clear();
 	#else
@@ -3192,14 +3224,11 @@ static void Bootstrap(void)
 		Keyboard_Attributes_On(PASSBREAKS);
 		Keyboard->Clear();
 	#endif
+	ra_log("[BOOTSTRAP] Keyboard->Clear() done\n");
 
-	/*
-	**	This is the shape staging buffer. It must always be available, so it is
-	**	allocated here and never freed. The library sets the globals ShapeBuffer
-	**	and ShapeBufferSize to these values, so it can be accessed for other
-	**	purposes.
-	*/
+	ra_log("[BOOTSTRAP] Set_Shape_Buffer()...\n");
 	Set_Shape_Buffer(new unsigned char[SHAPE_BUFFER_SIZE], SHAPE_BUFFER_SIZE);
+	ra_log("[BOOTSTRAP] Set_Shape_Buffer() done\n");
 
 	/*
 	**	Fetch the language text from the hard drive first. If it cannot be
@@ -3214,14 +3243,22 @@ static void Bootstrap(void)
 		SystemStrings = (char const *)MFCD::Retrieve(Language_Name("CONQUER"));
 	}
 #else
+	ra_log("[BOOTSTRAP] Retrieving CONQUER strings...\n");
 	SystemStrings = (char const *)MFCD::Retrieve(Language_Name("CONQUER"));
+	ra_log("[BOOTSTRAP] SystemStrings=%p\n", SystemStrings);
 #endif
+	ra_log("[BOOTSTRAP] Retrieving DEBUG.ENG...\n");
 	DebugStrings = (char const *)MFCD::Retrieve("DEBUG.ENG");
+	ra_log("[BOOTSTRAP] DebugStrings=%p\n", DebugStrings);
 
 	/*
 	**	Default palette initialization.
 	*/
-	memmove((unsigned char *)&GamePalette[0], (void *)MFCD::Retrieve("TEMPERAT.PAL"), 768L);
+	ra_log("[BOOTSTRAP] Loading TEMPERAT.PAL...\n");
+	void *pal = (void *)MFCD::Retrieve("TEMPERAT.PAL");
+	ra_log("[BOOTSTRAP] TEMPERAT.PAL=%p\n", pal);
+	if (pal) memmove((unsigned char *)&GamePalette[0], pal, 768L);
+	else ra_log("[BOOTSTRAP] WARNING: TEMPERAT.PAL not found!\n");
 	WhitePalette[0] = BlackPalette[0];
 //	GamePalette.Set();
 
@@ -3229,8 +3266,11 @@ static void Bootstrap(void)
 	**	Initialize expansion files (if present). Expansion files must be located
 	**	in the current directory.
 	*/
+	ra_log("[BOOTSTRAP] Init_Expansion_Files()...\n");
 	Init_Expansion_Files();
+	ra_log("[BOOTSTRAP] Init_Expansion_Files() done\n");
 
+	ra_log("[BOOTSTRAP] Setting SidebarScheme...\n");
 	SidebarScheme.Background 	= BLACK;
 	SidebarScheme.Corners    	= LTGREY;
 	SidebarScheme.Shadow		 	= DKGREY;
@@ -3239,7 +3279,9 @@ static void Bootstrap(void)
 	SidebarScheme.Bright		 	= WHITE;
 	SidebarScheme.BrightColor	= WHITE;
 	SidebarScheme.Box		 	 	= LTGREY;
+	ra_log("[BOOTSTRAP] GadgetClass::Set_Color_Scheme...\n");
 	GadgetClass::Set_Color_Scheme(&SidebarScheme);
+	ra_log("[BOOTSTRAP] Bootstrap() complete!\n");
 }
 
 

@@ -70,11 +70,44 @@ int main(int argc, char **argv) {
 
     ra_log("Raylib window initialized: %dx%d\n", GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE);
 
-    // Create the keyboard object (normally done in WinMain/STARTUP.CPP)
+    // Create objects normally done in WinMain/STARTUP.CPP
     {
         extern KeyboardClass *Keyboard;
         Keyboard = new KeyboardClass();
         ra_log("Keyboard object created\n");
+
+        extern int MouseInstalled;
+        MouseInstalled = 1;
+        ra_log("MouseInstalled set\n");
+
+        // Initialize video buffers (normally done in STARTUP.CPP)
+        // VisiblePage and HiddenPage must have allocated memory
+        // before Init_CDROM_Access calls VisiblePage.Clear()
+        extern GraphicBufferClass VisiblePage;
+        extern GraphicBufferClass HiddenPage;
+        extern GraphicViewPortClass SeenBuff;
+        extern GraphicViewPortClass HidPage;
+
+        ra_log("About to init VisiblePage...\n");
+        VisiblePage.Init(GAME_WIDTH, GAME_HEIGHT, NULL, GAME_WIDTH * GAME_HEIGHT, GBC_NONE);
+        ra_log("VisiblePage.Init done\n");
+        HiddenPage.Init(GAME_WIDTH, GAME_HEIGHT, NULL, GAME_WIDTH * GAME_HEIGHT, GBC_NONE);
+        SeenBuff.Attach(&VisiblePage, 0, 0, GAME_WIDTH, GAME_HEIGHT);
+        HidPage.Attach(&HiddenPage, 0, 0, GAME_WIDTH, GAME_HEIGHT);
+        ra_log("Video buffers initialized (%dx%d)\n", GAME_WIDTH, GAME_HEIGHT);
+
+        // Set search drives so the game finds data in current dir (skips CD-ROM check)
+        CCFileClass::Set_Search_Drives("./");
+        ra_log("Search drives set to ./\n");
+
+        // Pre-register MIX files for CnCNet distribution
+        // (CnCNet flattens the MIX hierarchy — files are top-level, not nested)
+        new MFCD("conquer.mix", &FastKey);
+        MFCD::Cache("conquer.mix");
+        new MFCD("general.mix", &FastKey);
+        new MFCD("sounds.mix", &FastKey);
+        new MFCD("speech.mix", &FastKey);
+        ra_log("CnCNet MIX files pre-registered\n");
     }
 
     // Try calling the game's Init_Game
