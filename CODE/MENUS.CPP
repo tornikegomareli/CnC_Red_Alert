@@ -808,45 +808,35 @@ int Main_Menu(unsigned long )
 					unsigned char *buf = (unsigned char *)(intptr_t)HidPage.Get_Offset();
 					int hpitch = HidPage.Get_Width() + HidPage.Get_XAdd();
 					if (buf) {
-						/* Draw dark background for menu area */
-						for (int row = 148; row < 148 + 6 * line_h; row++) {
-							for (int col = 200; col < 440; col++) {
-								buf[row * hpitch + col] = 13; /* dark gray */
+						for (int i = 0; items[i]; i++) {
+							int by = menu_y + i * line_h;
+							int text_len = 0;
+							for (const char *s = items[i]; *s; s++) text_len++;
+							int bw = text_len * 7 + 10;
+							/* Button background */
+							for (int row = by; row < by + 16 && row < 400; row++) {
+								for (int col = menu_x - 5; col < menu_x + bw && col < 640; col++) {
+									if (col >= 0) buf[row * hpitch + col] = 123;
+								}
+							}
+							/* Block text */
+							for (int row = by + 4; row < by + 12 && row < 400; row++) {
+								const char *s = items[i];
+								int cx = menu_x;
+								while (*s) {
+									if (*s != ' ') {
+										for (int px = 0; px < 5; px++) {
+											if (cx + px < 640)
+												buf[row * hpitch + cx + px] = 15;
+										}
+									}
+									cx += 7;
+									s++;
+								}
 							}
 						}
 					}
 					HidPage.Unlock();
-				}
-				/* Draw bright button bars for each menu item */
-				if (buf) {
-					for (int i = 0; items[i]; i++) {
-						int by = menu_y + i * line_h;
-						int text_len = 0;
-						for (const char *s = items[i]; *s; s++) text_len++;
-						int bw = text_len * 7 + 10;
-						/* Button background - dark blue (palette 123) */
-						for (int row = by; row < by + 16 && row < 400; row++) {
-							for (int col = menu_x - 5; col < menu_x + bw && col < 640; col++) {
-								if (col >= 0) buf[row * hpitch + col] = 123;
-							}
-						}
-						/* Button text - bright white pixels, 1px per char column */
-						for (int row = by + 4; row < by + 12 && row < 400; row++) {
-							const char *s = items[i];
-							int cx = menu_x;
-							while (*s) {
-								/* Only draw if not a space */
-								if (*s != ' ') {
-									for (int px = 0; px < 5; px++) {
-										if (cx + px < 640)
-											buf[row * hpitch + cx + px] = 15;
-									}
-								}
-								cx += 7;
-								s++;
-							}
-						}
-					}
 				}
 			}
 
