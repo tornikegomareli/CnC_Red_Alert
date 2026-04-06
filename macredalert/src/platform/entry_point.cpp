@@ -76,6 +76,11 @@ static void Convert_Palette_To_RGBA(unsigned char *indexed, unsigned char *rgba,
     }
 }
 
+// Menu overlay text (set by Main_Menu, rendered by Raylib)
+const char *g_menu_items[10] = {NULL};
+int g_menu_count = 0;
+int g_menu_y_start = 0;
+
 // Shared state for render callback
 static Texture2D g_fbTexture = {0};
 static unsigned char *g_rgba_pixels = NULL;
@@ -104,6 +109,23 @@ extern "C" void Raylib_Render_Frame(void) {
         (Rectangle){ 0, 0, (float)(g_game_width * 2), (float)(g_game_height * 2) },
         (Vector2){ 0, 0 }, 0.0f, WHITE
     );
+    /* Draw menu text overlay using Raylib's built-in font */
+    if (g_menu_count > 0 && g_menu_items[0]) {
+        int scale = 2;
+        int line_h = 22 * scale;
+        int menu_x = 204 * scale;
+        for (int i = 0; i < g_menu_count && g_menu_items[i]; i++) {
+            int by = (g_menu_y_start + i * 22) * scale;
+            int text_w = MeasureText(g_menu_items[i], 20);
+            /* Button background */
+            DrawRectangle(menu_x - 10, by, text_w + 20, 18 * scale, (Color){40, 40, 80, 200});
+            /* Button border */
+            DrawRectangleLines(menu_x - 10, by, text_w + 20, 18 * scale, (Color){120, 120, 180, 255});
+            /* Text */
+            DrawText(g_menu_items[i], menu_x, by + 8, 20, (Color){220, 220, 255, 255});
+        }
+    }
+
     DrawFPS(g_game_width * 2 - 90, 10);
     EndDrawing();
 }

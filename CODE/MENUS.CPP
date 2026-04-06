@@ -797,47 +797,18 @@ int Main_Menu(unsigned long )
 			*/
 			/* Draw menu text directly as fallback — the button gadgets
 			   may not render correctly yet, so we draw text ourselves */
+			/* Menu text overlay — stored for Raylib to render on top */
 			{
-				extern GraphicViewPortClass HidPage;
-				int menu_x = 220, menu_y = 155, line_h = 22;
-				const char *items[] = {
-					"Start New Game", "Load Mission", "Multiplayer Game",
-					"Intro & Sneak Peek", "Exit Game", NULL
-				};
-				if (HidPage.Lock()) {
-					unsigned char *buf = (unsigned char *)(intptr_t)HidPage.Get_Offset();
-					int hpitch = HidPage.Get_Width() + HidPage.Get_XAdd();
-					if (buf) {
-						for (int i = 0; items[i]; i++) {
-							int by = menu_y + i * line_h;
-							int text_len = 0;
-							for (const char *s = items[i]; *s; s++) text_len++;
-							int bw = text_len * 7 + 10;
-							/* Button background */
-							for (int row = by; row < by + 16 && row < 400; row++) {
-								for (int col = menu_x - 5; col < menu_x + bw && col < 640; col++) {
-									if (col >= 0) buf[row * hpitch + col] = 123;
-								}
-							}
-							/* Block text */
-							for (int row = by + 4; row < by + 12 && row < 400; row++) {
-								const char *s = items[i];
-								int cx = menu_x;
-								while (*s) {
-									if (*s != ' ') {
-										for (int px = 0; px < 5; px++) {
-											if (cx + px < 640)
-												buf[row * hpitch + cx + px] = 15;
-										}
-									}
-									cx += 7;
-									s++;
-								}
-							}
-						}
-					}
-					HidPage.Unlock();
-				}
+				extern const char *g_menu_items[];
+				extern int g_menu_count;
+				extern int g_menu_y_start;
+				g_menu_items[0] = "Start New Game";
+				g_menu_items[1] = "Load Mission";
+				g_menu_items[2] = "Multiplayer Game";
+				g_menu_items[3] = "Intro & Sneak Peek";
+				g_menu_items[4] = "Exit Game";
+				g_menu_count = 5;
+				g_menu_y_start = 155;
 			}
 
 			ra_log("[MENU] Blitting HidPage to SeenPage...\n");
