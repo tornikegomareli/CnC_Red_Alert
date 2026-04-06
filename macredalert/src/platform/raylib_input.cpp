@@ -147,4 +147,26 @@ void Raylib_Poll_Input(WWKeyboardClass *kbd) {
 int Get_Mouse_X(void) { return g_mouse_x; }
 int Get_Mouse_Y(void) { return g_mouse_y; }
 
+/*
+ * GetAsyncKeyState — replaces the Windows API stub.
+ * The gadget system calls this to check if mouse buttons are held down.
+ * Returns non-zero if the key is currently pressed.
+ */
+short GetAsyncKeyState(int vk) {
+    switch (vk) {
+        case 0x01: /* VK_LBUTTON */
+            return IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? (short)0x8000 : 0;
+        case 0x02: /* VK_RBUTTON */
+            return IsMouseButtonDown(MOUSE_BUTTON_RIGHT) ? (short)0x8000 : 0;
+        case 0x10: /* VK_SHIFT */
+            return (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) ? (short)0x8000 : 0;
+        case 0x11: /* VK_CONTROL */
+            return (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) ? (short)0x8000 : 0;
+        case 0x12: /* VK_MENU (Alt) */
+            return (IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) ? (short)0x8000 : 0;
+        default:
+            return 0;
+    }
+}
+
 } /* extern "C" */

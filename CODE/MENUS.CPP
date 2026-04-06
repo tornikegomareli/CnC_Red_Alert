@@ -851,6 +851,7 @@ int Main_Menu(unsigned long )
 		**	to the cryptographic random number generator.
 		*/
 		if (input != 0) {
+				ra_log("[MENU] Input received: 0x%04X\n", input);
 			#ifdef WIN32
 				SYSTEMTIME t;
 				GetSystemTime(&t);
@@ -879,6 +880,7 @@ int Main_Menu(unsigned long )
 #endif
 
 			case (BUTTON_START | KN_BUTTON):
+				ra_log("[MENU] *** START NEW GAME clicked! ***\n");
 				retval = (input & 0x7FFF) - BUTTON_EXPAND;
 				process = false;
 				break;

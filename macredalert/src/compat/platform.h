@@ -633,7 +633,8 @@ static inline HWND CreateWindowExA(DWORD ex, LPCSTR cls, LPCSTR name, DWORD styl
 
 // Input
 static inline SHORT GetKeyState(int vk) { (void)vk; return 0; }
-static inline SHORT GetAsyncKeyState(int vk) { (void)vk; return 0; }
+/* GetAsyncKeyState provided by raylib_input.cpp */
+SHORT GetAsyncKeyState(int vk);
 static inline SHORT VkKeyScanA(CHAR c) { (void)c; return -1; }
 #define VkKeyScan VkKeyScanA
 static inline BOOL ClipCursor(const RECT *r) { (void)r; return FALSE; }
