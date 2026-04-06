@@ -242,11 +242,7 @@ int SHAEngine::Result(void * result) const
 **	is called even though they both have the same parameters and declaration attributes.
 */
 #pragma warn -sig
-template<class T>
-T _rotl(T X, int n)
-{
-	return(T)( ( X << n ) | ( (unsigned)X >> ((sizeof(T)*8) - n) ) );
-}
+/* _rotl template is already defined in jshell.h (included via function.h) */
 //unsigned long _RTLENTRY _rotl(unsigned long X, int n)
 //{
 //	return(unsigned long)( (unsigned long)( (unsigned long)( (unsigned long)X ) << (int)n ) | (unsigned long)( ((unsigned long) X ) >> ( (int)((int)(sizeof(long)*(long)8) - (long)n) ) ) );

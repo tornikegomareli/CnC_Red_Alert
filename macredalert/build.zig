@@ -125,6 +125,7 @@ pub fn build(b: *std.Build) void {
         "-Wno-deprecated-builtins",
         "-Wno-shadow",
         "-Wno-shadow-all",
+        "-Wno-varargs",
         "-Dfar=",
         "-Dcdecl=",
         "-D_far=",
@@ -436,7 +437,7 @@ const code_sources: []const []const u8 = &.{
     "SURFACE.CPP",
     "TAB.CPP",
     "TACTION.CPP",
-    "TARCOM.CPP",
+    // "TARCOM.CPP", -- excluded (dead code; TarComClass::AI accesses UnitClass members not in hierarchy)
     "TARGET.CPP",
     // "TCPIP.CPP", -- excluded (non-essential),
     "TDATA.CPP",

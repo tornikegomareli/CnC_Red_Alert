@@ -307,6 +307,9 @@ CELL Coord_Cell(COORDINATE coord);
 #include	"rules.h"
 #include	"ini.h"
 #include	"int.h"
+/* Undo mp.h macros that collide with C++ standard library identifiers */
+#undef digit
+#undef signeddigit
 #include	"pk.h"
 #include	"pkpipe.h"
 #include	"pkstraw.h"
@@ -375,6 +378,8 @@ CELL Coord_Cell(COORDINATE coord);
 #include	"overlay.h"			// Overlay objects.
 #include	"smudge.h"			// Stains on the terrain objects.
 #include	"aircraft.h"		// Aircraft objects.
+#include	"turret.h"			// Turret objects.
+#include	"tarcom.h"			// Target computer objects.
 #include	"unit.h"				// Ground unit objects.
 #include "vessel.h"			// Sea unit objects.
 #include	"infantry.h"		// Infantry objects.
@@ -977,6 +982,8 @@ ArmorType Armor_From_Name(char const * name);
 ** Winstub.cpp
 */
 void Load_Title_Screen(char *name, GraphicViewPortClass *video_page, unsigned char *palette);
+int Write_PCX_File(char *name, GraphicViewPortClass& pic, unsigned char *palette);
+int Write_PCX_File(FileClass& file, GraphicViewPortClass& pic, PaletteClass * palette);
 
 /*
 ** Egos.CPP
@@ -993,33 +1000,66 @@ void Show_Who_Was_Responsible (void);
 **	names ever created, however there are other objects of this type (with different names) that
 **	are created.
 */
-extern CCPtr<AircraftClass> y1;
-extern CCPtr<AnimClass> y2;
-extern CCPtr<BuildingClass> y3;
-extern CCPtr<BulletClass> y4;
-extern CCPtr<FactoryClass> y5;
-extern CCPtr<HouseClass> y6;
-extern CCPtr<InfantryClass> y7;
-extern CCPtr<OverlayClass> y8;
-extern CCPtr<SmudgeClass> y9;
-extern CCPtr<TeamClass> y10;
-extern CCPtr<TeamTypeClass> y11;
-extern CCPtr<TemplateClass> y12;
-extern CCPtr<TerrainClass> y13;
-extern CCPtr<TriggerClass> y14;
-extern CCPtr<TriggerTypeClass> y15;
-extern CCPtr<HouseTypeClass>		y16;
-extern CCPtr<BuildingTypeClass>	y17;
-extern CCPtr<AircraftTypeClass>	y18;
-extern CCPtr<InfantryTypeClass>	y19;
-extern CCPtr<BulletTypeClass>		y20;
-extern CCPtr<AnimTypeClass>		y21;
-extern CCPtr<UnitTypeClass>		y22;
-extern CCPtr<VesselTypeClass>		y23;
-extern CCPtr<TemplateTypeClass>	y24;
-extern CCPtr<TerrainTypeClass>	y25;
-extern CCPtr<OverlayTypeClass>	y26;
-extern CCPtr<SmudgeTypeClass>		y27;
+/*
+** Explicit specialization declarations for CCPtr::Heap static members.
+** The definitions are in GLOBALS.CPP.
+*/
+template<> FixedIHeapClass * CCPtr<AircraftClass>::Heap;
+template<> FixedIHeapClass * CCPtr<AnimClass>::Heap;
+template<> FixedIHeapClass * CCPtr<BuildingClass>::Heap;
+template<> FixedIHeapClass * CCPtr<BulletClass>::Heap;
+template<> FixedIHeapClass * CCPtr<FactoryClass>::Heap;
+template<> FixedIHeapClass * CCPtr<HouseClass>::Heap;
+template<> FixedIHeapClass * CCPtr<InfantryClass>::Heap;
+template<> FixedIHeapClass * CCPtr<OverlayClass>::Heap;
+template<> FixedIHeapClass * CCPtr<SmudgeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<TeamClass>::Heap;
+template<> FixedIHeapClass * CCPtr<TeamTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<TemplateClass>::Heap;
+template<> FixedIHeapClass * CCPtr<TerrainClass>::Heap;
+template<> FixedIHeapClass * CCPtr<TriggerClass>::Heap;
+template<> FixedIHeapClass * CCPtr<TriggerTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<HouseTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<BuildingTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<AircraftTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<InfantryTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<BulletTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<AnimTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<UnitTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<VesselTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<TemplateTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<TerrainTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<OverlayTypeClass>::Heap;
+template<> FixedIHeapClass * CCPtr<SmudgeTypeClass>::Heap;
+
+/* Rename y1 to ccptr_y1 to avoid conflict with math.h Bessel function y1 */
+extern CCPtr<AircraftClass> ccptr_y1;
+extern CCPtr<AnimClass> ccptr_y2;
+extern CCPtr<BuildingClass> ccptr_y3;
+extern CCPtr<BulletClass> ccptr_y4;
+extern CCPtr<FactoryClass> ccptr_y5;
+extern CCPtr<HouseClass> ccptr_y6;
+extern CCPtr<InfantryClass> ccptr_y7;
+extern CCPtr<OverlayClass> ccptr_y8;
+extern CCPtr<SmudgeClass> ccptr_y9;
+extern CCPtr<TeamClass> ccptr_y10;
+extern CCPtr<TeamTypeClass> ccptr_y11;
+extern CCPtr<TemplateClass> ccptr_y12;
+extern CCPtr<TerrainClass> ccptr_y13;
+extern CCPtr<TriggerClass> ccptr_y14;
+extern CCPtr<TriggerTypeClass> ccptr_y15;
+extern CCPtr<HouseTypeClass>		ccptr_y16;
+extern CCPtr<BuildingTypeClass>	ccptr_y17;
+extern CCPtr<AircraftTypeClass>	ccptr_y18;
+extern CCPtr<InfantryTypeClass>	ccptr_y19;
+extern CCPtr<BulletTypeClass>		ccptr_y20;
+extern CCPtr<AnimTypeClass>		ccptr_y21;
+extern CCPtr<UnitTypeClass>		ccptr_y22;
+extern CCPtr<VesselTypeClass>		ccptr_y23;
+extern CCPtr<TemplateTypeClass>	ccptr_y24;
+extern CCPtr<TerrainTypeClass>	ccptr_y25;
+extern CCPtr<OverlayTypeClass>	ccptr_y26;
+extern CCPtr<SmudgeTypeClass>		ccptr_y27;
 template class DynamicVectorClass<CCPtr<TeamTypeClass> >;
 extern DynamicVectorClass<CCPtr<TeamTypeClass> > y002;
 template class DynamicVectorClass<CCPtr<TriggerTypeClass> >;

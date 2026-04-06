@@ -68,7 +68,7 @@ Surface::Surface(int w, int h, Buffer const * buffer, int pitch) :
 		**	A new buffer without existing memory specified, will allocate and manage its
 		**	own memory for the surface.
 		*/
-		new(&SurfaceData) Buffer(Logical_Size());
+		new(&SurfaceData) Buffer(Get_Size());
 	}
 }
 
@@ -132,7 +132,7 @@ void Surface::Copy_To(Rect const & fromrect, Buffer & tobuffer) const
 	/*
 	**	Determine the source starting byte pointer.
 	*/
-	char * source = Get_Buffer() + rect.Y*Bytes_Per_Line() + rect.X;
+	char * source = (char *)Get_Buffer() + rect.Y*Bytes_Per_Line() + rect.X;
 
 	/*
 	**	Determine the destination buffer pointer. This will always be the
@@ -154,7 +154,7 @@ void Surface::Copy_To(Rect const & fromrect, Buffer & tobuffer) const
 		**	Copy the source to the destination in line segments.
 		*/
 		for (int y = 0; y < rect.Height; y++) {
-			memmove(dest, source, width);
+			memmove(dest, source, rect.Width);
 			dest += rect.Width;
 			source += rect.Width + pitch;
 		}

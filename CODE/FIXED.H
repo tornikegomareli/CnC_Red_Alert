@@ -228,5 +228,11 @@ class fixed
 		} Data;
 };
 
+/* Namespace-scope declarations so ADL can find friend functions when arguments are not 'fixed' type */
+const fixed Sub_Saturate(fixed const & value, unsigned capvalue);
+const fixed Sub_Saturate(fixed const & value, fixed const & capvalue);
+const fixed Saturate(fixed const & value, unsigned capvalue);
+const fixed Saturate(fixed const & value, fixed const & capvalue);
+
 
 #endif

@@ -2,10 +2,9 @@
 #ifndef _PCX_H_STUB
 #define _PCX_H_STUB
 
-/* GraphicBufferClass forward decl */
-class GraphicBufferClass;
-class PaletteClass;
+/* Forward declarations */
+class GraphicViewPortClass;
 
-int __cdecl Load_Title_Screen(char const *name, GraphicBufferClass *dest, PaletteClass &palette);
+void Load_Title_Screen(char *name, GraphicViewPortClass *video_page, unsigned char *palette);
 
 #endif

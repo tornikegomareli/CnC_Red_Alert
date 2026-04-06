@@ -297,7 +297,7 @@ char WWKeyboardClass::To_ASCII(unsigned short key)
 }
 
 
-int WWKeyboardClass::Down(unsigned short key)
+bool WWKeyboardClass::Down(unsigned short key)
 {
 	return(GetAsyncKeyState(key & 0xFF));
 }
@@ -381,7 +381,7 @@ void WWKeyboardClass::Clear(void)
 }
 
 
-void WWKeyboardClass::Message_Handler(HWND , UINT message, UINT wParam, LONG lParam)
+bool WWKeyboardClass::Message_Handler(HWND , UINT message, UINT wParam, LONG lParam)
 {
 	switch (message) {
 		case WM_SYSKEYDOWN:

@@ -38,6 +38,18 @@ public:
     // Implicit pointer conversion (for memcpy, Set_Pal, etc.)
     operator void* (void) { return &Palette[0]; }
     operator void const* (void) const { return &Palette[0]; }
+    operator unsigned char* (void) { return (unsigned char*)&Palette[0]; }
+    operator unsigned char const* (void) const { return (unsigned char const*)&Palette[0]; }
+
+    // Explicit bool conversion (true if palette has any non-black color)
+    explicit operator bool (void) const {
+        for (int i = 0; i < COLOR_COUNT; i++) {
+            if (Palette[i].Red_Component() || Palette[i].Green_Component() || Palette[i].Blue_Component()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // Boolean test (false if palette is all black)
     bool operator! (void) const {

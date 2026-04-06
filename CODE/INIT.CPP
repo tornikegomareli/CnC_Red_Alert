@@ -1088,7 +1088,7 @@ bool Select_Game(bool fade)
 
 									}
 									WWDebugString ("RA95 - About to delete scrap memory.\n");
-									delete temp_buffer;
+									delete[] temp_buffer;
 
 
 

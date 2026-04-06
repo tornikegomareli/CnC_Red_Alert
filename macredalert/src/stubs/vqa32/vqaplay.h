@@ -2,14 +2,16 @@
 #ifndef _VQAPLAY_H_STUB
 #define _VQAPLAY_H_STUB
 
-typedef void *VQAHandle;
+typedef struct _VQAHandle {
+    unsigned long VQAio;
+} VQAHandle;
 
 typedef struct _VQAConfig {
     int Vmode;
     int VBIBit;
     int ImageWidth;
     int ImageHeight;
-    int ImageBuf;
+    unsigned char *ImageBuf;
     int X1, Y1, X2, Y2;
     int FrameRate;
     int DrawRate;
@@ -31,11 +33,13 @@ typedef struct _VQAConfig {
     int DigiDMA;
     long CaptureBuf;
     long EVABuf;
-    void (*DrawerCallback)(unsigned char *, long);
+    long (*DrawerCallback)(unsigned char *, long);
     void (*EventHandler)(void);
     int NotifyFlags;
     int Language;
     char *CaptionFont;
+    void *SoundObject;
+    void *PrimaryBufferPtr;
 } VQAConfig;
 
 #define VQAOPTF_AUDIO 0x0001
@@ -61,6 +65,7 @@ static inline void VQA_Free(VQAHandle *h) { (void)h; }
 static inline void VQA_Init(VQAHandle *h, long (*io)(VQAHandle*, long, void*, long)) { (void)h; (void)io; }
 static inline int VQA_Open(VQAHandle *h, const char *name, VQAConfig *cfg) { (void)h;(void)name;(void)cfg; return -1; }
 static inline void VQA_Close(VQAHandle *h) { (void)h; }
-static inline VQAConfig VQA_DefaultConfig = {0};
+static inline int VQA_Play(VQAHandle *h, int mode) { (void)h; (void)mode; return 0; }
+static inline void VQA_DefaultConfig(VQAConfig *cfg) { if(cfg) memset(cfg, 0, sizeof(VQAConfig)); }
 
 #endif

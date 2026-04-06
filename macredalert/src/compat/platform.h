@@ -186,8 +186,8 @@ typedef void                *HMENU;
 typedef void                *HGLOBAL;
 typedef long                HRESULT;
 typedef void                *HKEY;
-typedef void                *LPARAM;
-typedef void                *WPARAM;
+typedef long                LPARAM;
+typedef unsigned long       WPARAM;
 typedef long                LRESULT;
 typedef UINT                MMRESULT;
 
@@ -1157,10 +1157,20 @@ static inline int Start_Primary_Sound_Buffer(int forced=0) { (void)forced; retur
 static inline void Stop_Primary_Sound_Buffer(void) {}
 static inline void Set_Primary_Buffer_Format(void) {}
 static inline int Get_Digi_Handle(void) { return -1; }
-static inline int Sound_Callback(void *obj, int event, int val, void *data) { (void)obj;(void)event;(void)val;(void)data; return 0; }
+static inline void Sound_Callback(void) {}
 static inline int Audio_Init(void *hwnd, int bits, int stereo, int rate, int reverse) { (void)hwnd;(void)bits;(void)stereo;(void)rate;(void)reverse; return 0; }
 typedef void (*Audio_Focus_Loss_Func_Type)(void);
 static inline int StreamLowImpact = 0;
+
+/* Westwood Online API stub — not used on macOS */
+struct WolGameInfo { int iPlayerCount; };
+class WolapiObject {
+public:
+    WolGameInfo GameInfoCurrent;
+    bool bEnableNewAftermathUnits;
+    WolapiObject() : GameInfoCurrent{0}, bEnableNewAftermathUnits(false) {}
+};
+static inline WolapiObject* pWolapi = nullptr;
 
 /* HRESULT macro */
 #ifndef FAILED

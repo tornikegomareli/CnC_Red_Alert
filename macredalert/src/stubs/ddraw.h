@@ -255,6 +255,7 @@ struct IDirectDrawSurface {
     }
     LONG GetBltStatus(DWORD flags) { (void)flags; return DD_OK; }
     LONG SetPalette(IDirectDrawPalette *pal) { (void)pal; return DD_OK; }
+    LONG GetPalette(IDirectDrawPalette **pal) { (void)pal; if(pal) *pal = nullptr; return DD_OK; }
     LONG SetColorKey(DWORD flags, DDCOLORKEY *key) { (void)flags; (void)key; return DD_OK; }
     LONG Restore() { return DD_OK; }
     LONG GetSurfaceDesc(LPDDSURFACEDESC desc) { (void)desc; return DD_OK; }

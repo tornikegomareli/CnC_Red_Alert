@@ -251,3 +251,20 @@ void Fancy_Text_Print(int text, unsigned x, unsigned y, unsigned fore, unsigned 
     (void)fore;
     Fancy_Text_Print(text, x, y, (RemapControlType *)NULL, back, flag);
 }
+
+/* Stub for Load_Title_Screen (WINSTUB.CPP excluded) */
+void Load_Title_Screen(char *name, GraphicViewPortClass *video_page, unsigned char *palette) {
+    (void)name; (void)video_page; (void)palette;
+}
+
+/* Stub for Write_PCX_File */
+int Write_PCX_File(char *name, GraphicViewPortClass& pic, unsigned char *palette) {
+    (void)name; (void)pic; (void)palette;
+    return 0;
+}
+
+/* Overload taking a FileClass (CDFileClass is derived from it) */
+int Write_PCX_File(FileClass& file, GraphicViewPortClass& pic, PaletteClass * palette) {
+    (void)file; (void)pic; (void)palette;
+    return 0;
+}
