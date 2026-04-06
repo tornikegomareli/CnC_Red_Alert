@@ -413,25 +413,10 @@ INST_TFIXED(VesselTypeClass)
 INST_TFIXED(WarheadTypeClass)
 INST_TFIXED(WeaponTypeClass)
 
-/* ================================================================== */
-/*  MixFileClass<CCFileClass>                                          */
-/* ================================================================== */
+/* MixFileClass<CCFileClass> — methods come from MIXFILE.CPP + template_inst.cpp.
+   Only the static List member needs to be defined here. */
 #include "MIXFILE.H"
-
 template<> List<MixFileClass<CCFileClass>> MixFileClass<CCFileClass>::List;
-
-template<> MixFileClass<CCFileClass>::MixFileClass(char const *filename, PKey const * key) :
-    Filename(filename), IsDigest(false), IsEncrypted(false), IsAllocated(false),
-    Count(0), DataSize(0), DataStart(0), HeaderBuffer(nullptr), Data(nullptr) {
-    (void)key;
-}
-template<> MixFileClass<CCFileClass>::~MixFileClass() {}
-template<> bool MixFileClass<CCFileClass>::Cache(Buffer const * buffer) { (void)buffer; return false; }
-template<> bool MixFileClass<CCFileClass>::Cache(char const *filename, Buffer const * buffer) { (void)filename; (void)buffer; return false; }
-template<> bool MixFileClass<CCFileClass>::Offset(char const *filename, void ** realptr, MixFileClass<CCFileClass> ** mixfile, long * offset, long * size) {
-    (void)filename; (void)realptr; (void)mixfile; (void)offset; (void)size; return false;
-}
-template<> void const * MixFileClass<CCFileClass>::Retrieve(char const *filename) { (void)filename; return nullptr; }
 
 /* ================================================================== */
 /*  Timer classes (WIN32LIB)                                           */

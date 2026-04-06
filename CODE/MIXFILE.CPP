@@ -143,7 +143,7 @@ MixFileClass<T>::~MixFileClass(void)
 	/*
 	**	Unlink this mixfile object from the chain.
 	*/
-	Unlink();
+	this->Unlink();
 }
 
 
@@ -577,4 +577,8 @@ assert(filename != NULL);//BG
 assert(1);//BG
 	return(false);
 }
+
+
+/* Explicit template instantiation for macOS port */
+template class MixFileClass<CCFileClass>;
 

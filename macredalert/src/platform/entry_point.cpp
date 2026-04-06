@@ -98,7 +98,11 @@ int main(int argc, char **argv) {
 
         // Set search drives so the game finds data in current dir (skips CD-ROM check)
         CCFileClass::Set_Search_Drives("./");
-        ra_log("Search drives set to ./\n");
+
+        // Tell the game all files are local — no CD required
+        extern int RequiredCD;
+        RequiredCD = -2;  // CD_LOCAL
+        ra_log("Search drives set to ./, RequiredCD=-2\n");
 
         // Pre-register MIX files for CnCNet distribution
         // (CnCNet flattens the MIX hierarchy — files are top-level, not nested)

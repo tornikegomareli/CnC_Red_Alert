@@ -41,5 +41,4 @@ template class TFixedIHeapClass<WeaponTypeClass>;
 
 // CCPtr::Heap static members already defined in CCPTR.CPP
 
-// MixFileClass
-template class MixFileClass<CCFileClass>;
+// MixFileClass — instantiated in MIXFILE.CPP
