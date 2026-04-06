@@ -145,8 +145,19 @@ int Linear_Scale_To_Linear(void *src, void *dst, int sx, int sy, int dx, int dy,
  * The font data is pointed to by the global FontPtr.
  * Font format: header with character widths, then bitmap data.
  */
+/*
+ * Buffer_Print — Render bitmap font text to a graphics viewport.
+ *
+ * Red Alert FNT font format:
+ *   [0-1]: unused    [2-3]: unused
+ *   [4-5]: offset to InfoBlock      [6-7]: offset to OffsetBlock
+ *   [8-9]: offset to WidthBlock     [10-11]: offset to DataBlock
+ *   InfoBlock+4 = max height,  InfoBlock+5 = max width
+ *   WidthBlock[char] = pixel width of character
+ *   OffsetBlock[char] = 16-bit offset into DataBlock for character bitmap
+ *   Each glyph: height rows × ceil(width/8) bytes, 1bpp MSB-first
+ */
 long Buffer_Print(void *thisptr, const char *str, int x, int y, int fcolor, int bcolor) {
-
     GVPCLayout *vp = (GVPCLayout *)thisptr;
     unsigned char *dst = (unsigned char *)(intptr_t)vp->Offset;
     if (!dst || !str) return 0;
@@ -155,47 +166,52 @@ long Buffer_Print(void *thisptr, const char *str, int x, int y, int fcolor, int 
     int dst_w = (int)vp->Width;
     int dst_h = (int)vp->Height;
 
+    /* Use the globals set by Set_Font() */
     extern void const *FontPtr;
-    if (!FontPtr) return 0;
+    extern char FontHeight;
+    extern char *FontWidthBlockPtr;
+    if (!FontPtr || !FontWidthBlockPtr) return 0;
 
-    /* Font header: first 2 bytes = max height, next is data offset table */
     unsigned char *font = (unsigned char *)(void *)FontPtr;
-    int font_height = font[4] | (font[5] << 8);  /* character height */
+    int font_height = (unsigned char)FontHeight;
     if (font_height == 0) font_height = 8;
 
-    /* Character width table at offset 6 */
-    unsigned short *offset_table = (unsigned short *)(font + 6);
+    /* Get sub-block pointers from font header */
+    unsigned short offset_block_off = *(unsigned short *)(font + 6);
+    unsigned short data_block_off   = *(unsigned short *)(font + 10);
+
+    unsigned short *char_offsets = (unsigned short *)(font + offset_block_off);
+    unsigned char  *data_block   = font + data_block_off;
 
     int cx = x;
     while (*str) {
         unsigned char ch = (unsigned char)*str++;
-        if (ch == '\n') { y += font_height; cx = x; continue; }
-        if (ch < 32) continue;
+        if (ch == '\r' || ch == '\n') { y += font_height; cx = x; continue; }
 
-        /* Get character data offset and width from font */
-        int char_offset = offset_table[ch];
-        int char_width = offset_table[ch + 1] - char_offset;
-        if (char_width <= 0 || char_width > 32) { cx += 4; continue; }
+        int char_width = (unsigned char)FontWidthBlockPtr[ch];
+        if (char_width == 0) continue;
 
-        unsigned char *char_data = font + char_offset;
+        /* Get glyph bitmap from data block */
+        unsigned short glyph_off = char_offsets[ch];
+        unsigned char *glyph = data_block + glyph_off;
         int bytes_per_row = (char_width + 7) / 8;
 
         for (int row = 0; row < font_height; row++) {
             int dy = y + row;
-            if (dy < 0 || dy >= dst_h) { char_data += bytes_per_row; continue; }
+            if (dy < 0 || dy >= dst_h) { glyph += bytes_per_row; continue; }
             for (int col = 0; col < char_width; col++) {
                 int dx = cx + col;
                 if (dx < 0 || dx >= dst_w) continue;
-                int bit = (char_data[col / 8] >> (7 - (col % 8))) & 1;
+                int bit = (glyph[col >> 3] >> (7 - (col & 7))) & 1;
                 if (bit) {
                     dst[dy * pitch + dx] = (unsigned char)fcolor;
                 } else if (bcolor != 0) {
                     dst[dy * pitch + dx] = (unsigned char)bcolor;
                 }
             }
-            char_data += bytes_per_row;
+            glyph += bytes_per_row;
         }
-        cx += char_width + 1;
+        cx += char_width;
     }
     return (long)(cx - x);
 }
