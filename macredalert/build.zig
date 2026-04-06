@@ -278,7 +278,7 @@ const code_sources: []const []const u8 = &.{
     // "DIBUTIL.CPP", -- excluded (non-essential),
     "DISPLAY.CPP",
     "DOOR.CPP",
-    "DPMI.CPP",
+    // "DPMI.CPP", -- excluded
     "DRIVE.CPP",
     "DROP.CPP",
     "DTABLE.CPP",
@@ -302,7 +302,7 @@ const code_sources: []const []const u8 = &.{
     "GADGET.CPP",
     "GAMEDLG.CPP",
     "GAUGE.CPP",
-    "GETCPU.CPP",
+    // "GETCPU.CPP", -- excluded
     "GLOBALS.CPP",
     "GOPTIONS.CPP",
     "GSCREEN.CPP",
@@ -410,7 +410,7 @@ const code_sources: []const []const u8 = &.{
     "RULES.CPP",
     "SAVELOAD.CPP",
     "SCENARIO.CPP",
-    "SCORE.CPP",
+    // "SCORE.CPP", -- excluded
     "SCROLL.CPP",
     "SDATA.CPP",
     "SEDITDLG.CPP",
@@ -431,7 +431,7 @@ const code_sources: []const []const u8 = &.{
     "STATBTN.CPP",
     // "STATS.CPP", -- excluded (non-essential),
     "STRAW.CPP",
-    "STUB.CPP",
+    // "STUB.CPP", -- excluded
     "SUPER.CPP",
     "SURFACE.CPP",
     "TAB.CPP",
@@ -470,7 +470,7 @@ const code_sources: []const []const u8 = &.{
     "W95TRACE.CPP",
     "WARHEAD.CPP",
     "WEAPON.CPP",
-    "WINSTUB.CPP", // Will be replaced by platform layer in Phase 3
+    // "WINSTUB.CPP", -- excluded // Will be replaced by platform layer in Phase 3
     // WOL_CGAM.CPP -- excluded (Westwood Online)
     // WOL_CHAT.CPP -- excluded
     // WOL_DNLD.CPP -- excluded
@@ -481,7 +481,7 @@ const code_sources: []const []const u8 = &.{
     // WOLAPIOB.CPP -- excluded
     // "WOLEDIT.CPP", -- excluded (non-essential),
     // WOLSTRNG.CPP -- excluded
-    "WRITEPCX.CPP",
+    // "WRITEPCX.CPP", -- excluded
     // "WSPIPX.CPP", -- excluded (non-essential),
     // "WSPROTO.CPP", -- excluded (non-essential),
     // "WSPUDP.CPP", -- excluded (non-essential),

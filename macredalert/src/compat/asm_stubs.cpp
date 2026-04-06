@@ -149,12 +149,11 @@ void __cdecl Mem_Copy(void const *source, void *dest, unsigned long bytes_to_cop
     if (source && dest && bytes_to_copy) memmove(dest, source, bytes_to_copy);
 }
 
-long __cdecl strtrim(char *str) {
-    if (!str) return 0;
+void __cdecl strtrim(char *str) {
+    if (!str) return;
     // trim trailing spaces
-    long len = (long)strlen(str);
+    int len = (int)strlen(str);
     while (len > 0 && str[len-1] == ' ') { str[--len] = '\0'; }
-    return len;
 }
 
 // ============================================================================
@@ -166,23 +165,23 @@ void CC_Draw_Shape(void const *shapefile, int shapenum, int x, int y,
     (void)shapefile; (void)shapenum; (void)x; (void)y; (void)window; (void)fadingdata;
 }
 
-int Get_Build_Frame_Count(void const *dataptr) {
+unsigned short Get_Build_Frame_Count(void const *dataptr) {
     (void)dataptr; return 0;
 }
 
-int Get_Build_Frame_X(void const *dataptr) {
+unsigned short Get_Build_Frame_X(void const *dataptr) {
     (void)dataptr; return 0;
 }
 
-int Get_Build_Frame_Y(void const *dataptr) {
+unsigned short Get_Build_Frame_Y(void const *dataptr) {
     (void)dataptr; return 0;
 }
 
-int Get_Build_Frame_Width(void const *dataptr) {
+unsigned short Get_Build_Frame_Width(void const *dataptr) {
     (void)dataptr; return 0;
 }
 
-int Get_Build_Frame_Height(void const *dataptr) {
+unsigned short Get_Build_Frame_Height(void const *dataptr) {
     (void)dataptr; return 0;
 }
 

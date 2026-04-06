@@ -1203,8 +1203,8 @@ static inline char *strrev(char *str) {
     return str;
 }
 
-/* segread — declared but defined in i86.h which provides SREGS */
-/* Users should include <dos.h> or <i86.h> to get segread */
+static inline void GetSystemTime(LPSYSTEMTIME st) { if(st) memset(st,0,sizeof(*st)); }
+#define LINGER struct linger
 
 /* diskfree_t */
 struct diskfree_t {
