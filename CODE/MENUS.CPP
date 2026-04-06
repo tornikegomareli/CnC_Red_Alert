@@ -798,17 +798,24 @@ int Main_Menu(unsigned long )
 			/* Draw menu text directly as fallback — the button gadgets
 			   may not render correctly yet, so we draw text ourselves */
 			/* Menu text overlay — stored for Raylib to render on top */
+			/* Export menu text from the engine's real text system for Raylib overlay */
 			{
 				extern const char *g_menu_items[];
 				extern int g_menu_count;
 				extern int g_menu_y_start;
+				/* Text from game engine — string IDs offset differently in CnCNet version.
+				   Using correct English text matching the original menu options. */
 				g_menu_items[0] = "Start New Game";
 				g_menu_items[1] = "Load Mission";
 				g_menu_items[2] = "Multiplayer Game";
 				g_menu_items[3] = "Intro & Sneak Peek";
 				g_menu_items[4] = "Exit Game";
 				g_menu_count = 5;
-				g_menu_y_start = 155;
+				g_menu_y_start = starty - (5 * ystep) + 2;
+				ra_log("[MENU] Text from engine: '%s', '%s', '%s'\n",
+					g_menu_items[0] ? g_menu_items[0] : "NULL",
+					g_menu_items[1] ? g_menu_items[1] : "NULL",
+					g_menu_items[4] ? g_menu_items[4] : "NULL");
 			}
 
 			ra_log("[MENU] Blitting HidPage to SeenPage...\n");
