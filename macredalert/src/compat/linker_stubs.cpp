@@ -77,6 +77,43 @@ Int<MAX_UNIT_PRECISION> Generate_Prime(Straw &rng, int bits, Int<MAX_UNIT_PRECIS
     return result;
 }
 
+// Enum bitwise operators
+ThreatType operator&(ThreatType a, ThreatType b) { return (ThreatType)((int)a & (int)b); }
+ThreatType operator|(ThreatType a, ThreatType b) { return (ThreatType)((int)a | (int)b); }
+ThreatType operator~(ThreatType a) { return (ThreatType)(~(int)a); }
+
+TextPrintType operator&(TextPrintType a, TextPrintType b) { return (TextPrintType)((int)a & (int)b); }
+TextPrintType operator|(TextPrintType a, TextPrintType b) { return (TextPrintType)((int)a | (int)b); }
+TextPrintType operator~(TextPrintType a) { return (TextPrintType)(~(int)a); }
+
+GadgetClass::FlagEnum operator|(GadgetClass::FlagEnum a, GadgetClass::FlagEnum b) { return (GadgetClass::FlagEnum)((int)a | (int)b); }
+GadgetClass::FlagEnum operator~(GadgetClass::FlagEnum a) { return (GadgetClass::FlagEnum)(~(int)a); }
+
+DriveClass::TrackControlType operator&(DriveClass::TrackControlType a, DriveClass::TrackControlType b) { return (DriveClass::TrackControlType)((int)a & (int)b); }
+DriveClass::TrackControlType operator|(DriveClass::TrackControlType a, DriveClass::TrackControlType b) { return (DriveClass::TrackControlType)((int)a | (int)b); }
+
+EditClass::EditStyle operator&(EditClass::EditStyle a, EditClass::EditStyle b) { return (EditClass::EditStyle)((int)a & (int)b); }
+
+// Enum increment operators
+#define ENUM_INC(T) T operator++(T &v, int) { T old = v; v = (T)((int)v + 1); return old; }
+ENUM_INC(BulletType)
+ENUM_INC(FacingType)
+ENUM_INC(HousesType)
+ENUM_INC(SmudgeType)
+ENUM_INC(StructType)
+ENUM_INC(VesselType)
+ENUM_INC(OverlayType)
+ENUM_INC(TerrainType)
+ENUM_INC(TheaterType)
+ENUM_INC(AircraftType)
+ENUM_INC(InfantryType)
+ENUM_INC(TemplateType)
+ENUM_INC(AnimType)
+ENUM_INC(UnitType)
+ENUM_INC(LayerType)
+ENUM_INC(ThemeType)
+ScenarioVarEnum operator++(ScenarioVarEnum &v, int) { ScenarioVarEnum old = v; v = (ScenarioVarEnum)((int)v + 1); return old; }
+
 // Entry point
 int main(int argc, char **argv) {
     (void)argc; (void)argv;

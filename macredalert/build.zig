@@ -192,6 +192,7 @@ pub fn build(b: *std.Build) void {
         .root = b.path("src/compat"),
         .files = &.{
             "linker_stubs.cpp",
+            "template_inst.cpp",
         },
         .flags = code_cxx_flags,
     });
