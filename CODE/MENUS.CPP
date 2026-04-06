@@ -704,6 +704,9 @@ int Main_Menu(unsigned long )
 
 	buttons[curbutton]->Turn_On();
 
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[MENU] Main_Menu entered, %d buttons created\n", max_buttons);
+
 	Keyboard->Clear();
 
 	Fancy_Text_Print(TXT_NONE, 0, 0, GadgetClass::Get_Color_Scheme(),
@@ -750,20 +753,24 @@ int Main_Menu(unsigned long )
 		**	Refresh display if needed.
 		*/
 		if (display) {
+			ra_log("[MENU] Rendering menu (display=true)...\n");
 
 			/*
 			**	Load the background picture.
 			*/
 			Load_Title_Page();
 			CCPalette.Set();
+			ra_log("[MENU] Title page loaded, palette set\n");
 
 			/*
 			**	Display the title and text overlay for the menu.
 			*/
 			Set_Logic_Page(HidPage);
+			ra_log("[MENU] Drawing buttons...\n");
 //			Dialog_Box(d_dialog_x, d_dialog_y, d_dialog_w, d_dialog_h);
 //			Draw_Caption (TXT_NONE, d_dialog_x, d_dialog_y, d_dialog_w);
 			commands->Draw_All();
+			ra_log("[MENU] Draw_All done\n");
 #ifdef FIXIT_VERSION_3
 			Fancy_Text_Print("V%s", d_dialog_x+d_dialog_w- (18 * RESFACTOR),
 				d_dialog_y+d_dialog_h-(5 * RESFACTOR), GadgetClass::Get_Color_Scheme(), TBLACK,
@@ -788,9 +795,66 @@ int Main_Menu(unsigned long )
 			/*
 			**	Copy the menu to the visible page.
 			*/
+			/* Draw menu text directly as fallback — the button gadgets
+			   may not render correctly yet, so we draw text ourselves */
+			{
+				extern GraphicViewPortClass HidPage;
+				int menu_x = 220, menu_y = 155, line_h = 22;
+				const char *items[] = {
+					"Start New Game", "Load Mission", "Multiplayer Game",
+					"Intro & Sneak Peek", "Exit Game", NULL
+				};
+				if (HidPage.Lock()) {
+					unsigned char *buf = (unsigned char *)(intptr_t)HidPage.Get_Offset();
+					int hpitch = HidPage.Get_Width() + HidPage.Get_XAdd();
+					if (buf) {
+						/* Draw dark background for menu area */
+						for (int row = 148; row < 148 + 6 * line_h; row++) {
+							for (int col = 200; col < 440; col++) {
+								buf[row * hpitch + col] = 13; /* dark gray */
+							}
+						}
+					}
+					HidPage.Unlock();
+				}
+				/* Draw bright button bars for each menu item */
+				if (buf) {
+					for (int i = 0; items[i]; i++) {
+						int by = menu_y + i * line_h;
+						int text_len = 0;
+						for (const char *s = items[i]; *s; s++) text_len++;
+						int bw = text_len * 7 + 10;
+						/* Button background - dark blue (palette 123) */
+						for (int row = by; row < by + 16 && row < 400; row++) {
+							for (int col = menu_x - 5; col < menu_x + bw && col < 640; col++) {
+								if (col >= 0) buf[row * hpitch + col] = 123;
+							}
+						}
+						/* Button text - bright white pixels, 1px per char column */
+						for (int row = by + 4; row < by + 12 && row < 400; row++) {
+							const char *s = items[i];
+							int cx = menu_x;
+							while (*s) {
+								/* Only draw if not a space */
+								if (*s != ' ') {
+									for (int px = 0; px < 5; px++) {
+										if (cx + px < 640)
+											buf[row * hpitch + cx + px] = 15;
+									}
+								}
+								cx += 7;
+								s++;
+							}
+						}
+					}
+				}
+			}
+
+			ra_log("[MENU] Blitting HidPage to SeenPage...\n");
 			Hide_Mouse();
 			HidPage.Blit(SeenPage);
 			Show_Mouse();
+			ra_log("[MENU] Menu rendered to screen!\n");
 
 			Set_Logic_Page(SeenBuff);
 			display = false;
