@@ -2839,7 +2839,10 @@ static void Init_One_Time_Systems(void)
  *=============================================================================================*/
 static void Init_Fonts(void)
 {
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[FONTS] Retrieving 12METFNT.FNT...\n");
 	Metal12FontPtr = MFCD::Retrieve("12METFNT.FNT");
+	ra_log("[FONTS] Metal12FontPtr=%p\n", Metal12FontPtr);
 	MapFontPtr = MFCD::Retrieve("HELP.FNT");
 	Font6Ptr = MFCD::Retrieve("6POINT.FNT");
 	GradFont6Ptr = MFCD::Retrieve("GRAD6FNT.FNT");
@@ -2972,70 +2975,44 @@ static void Init_CDROM_Access(void)
  *=============================================================================================*/
 static void Init_Bootstrap_Mixfiles(void)
 {
+	extern void ra_log(const char *fmt, ...);
 	int temp = RequiredCD;
 	RequiredCD = -2;
 
-#ifdef WOLAPI_INTEGRATION
-	CCFileClass fileWolapiMix( "WOLAPI.MIX" );
-	if( fileWolapiMix.Is_Available() )
-	{
-		new MFCD( "WOLAPI.MIX", &FastKey );
-		MFCD::Cache( "WOLAPI.MIX" );
-	}
-#endif
-
-#ifdef FIXIT_CSII	//	Ok. ajw
-	CCFileClass file2("EXPAND2.MIX");
-	if (file2.Is_Available()) {
-		new MFCD("EXPAND2.MIX", &FastKey);
-		bool ok = MFCD::Cache("EXPAND2.MIX");
-		assert(ok);
-	}
-#endif
-
-#ifdef FIXIT_CSII	//	Ok. ajw
-	bool ok1;
- #ifdef WIN32
-	new MFCD("HIRES1.MIX", &FastKey);
-	ok1 = MFCD::Cache("HIRES1.MIX");
-	assert(ok1);
- #else
-	new MFCD("LORES1.MIX", &FastKey);
-	ok1 = MFCD::Cache("LORES1.MIX");
-	assert(ok1);
- #endif
-#endif
-
-#ifdef FIXIT_ANTS	//	Ok. ajw
-	CCFileClass file("EXPAND.MIX");
-	if (file.Is_Available()) {
-		new MFCD("EXPAND.MIX", &FastKey);
-		bool ok = MFCD::Cache("EXPAND.MIX");
-		assert(ok);
-	}
-#endif
-
-	new MFCD("REDALERT.MIX", &FastKey);
-
 	/*
-	**	Bootstrap enough of the system so that the error dialog box can successfully
-	**	be displayed.
+	** CnCNet distribution has a flat file layout:
+	**   general.mix  = game assets (replaces REDALERT.MIX/MAIN.MIX)
+	**   cclocal.mix  = localization (replaces LOCAL.MIX)
+	**   update.mix   = patched HIRES data (replaces HIRES.MIX)
+	**   conquer.mix  = game data (RULES.INI, etc.)
+	**
+	** Register and cache them in the order the game expects.
 	*/
-	new MFCD("LOCAL.MIX", &FastKey);			// Cached.
-	bool ok = MFCD::Cache("LOCAL.MIX");
-	assert(ok);
 
-#ifdef WIN32
-	new MFCD("HIRES.MIX", &FastKey);
-	ok = MFCD::Cache("HIRES.MIX");
-	assert(ok);
+	// Try CnCNet names first, fall back to original names
+	const char *general_name = CCFileClass("general.mix").Is_Available() ? "general.mix" : "REDALERT.MIX";
+	const char *local_name = CCFileClass("cclocal.mix").Is_Available() ? "cclocal.mix" : "LOCAL.MIX";
+	const char *hires_name = CCFileClass("updatec.mix").Is_Available() ? "updatec.mix" :
+	                         CCFileClass("update.mix").Is_Available() ? "update.mix" : "HIRES.MIX";
 
-	new MFCD("NCHIRES.MIX", &FastKey);		//Non-cached hires stuff incl VQ palettes
-#else
-	new MFCD("LORES.MIX", &FastKey);
-	ok = MFCD::Cache("LORES.MIX");
-	assert(ok);
-#endif	//WIN32
+	ra_log("[BOOTSTRAP_MIX] general=%s local=%s hires=%s\n", general_name, local_name, hires_name);
+
+	new MFCD(general_name, &FastKey);
+
+	new MFCD(local_name, &FastKey);
+	bool ok = MFCD::Cache(local_name);
+	ra_log("[BOOTSTRAP_MIX] Cache(%s) = %d\n", local_name, ok);
+
+	new MFCD(hires_name, &FastKey);
+	ok = MFCD::Cache(hires_name);
+	ra_log("[BOOTSTRAP_MIX] Cache(%s) = %d\n", hires_name, ok);
+
+	// Also register conquer.mix (contains RULES.INI, etc.)
+	if (CCFileClass("conquer.mix").Is_Available()) {
+		new MFCD("conquer.mix", &FastKey);
+		ok = MFCD::Cache("conquer.mix");
+		ra_log("[BOOTSTRAP_MIX] Cache(conquer.mix) = %d\n", ok);
+	}
 
 	RequiredCD = temp;
 }

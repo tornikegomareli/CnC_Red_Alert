@@ -1146,8 +1146,36 @@ typedef void *LPSOCKADDR;
 
 /* Missing string functions */
 #define strcmpi strcasecmp
-#define _splitpath(p,d,dir,f,e) do{(void)(d);(void)(dir);(void)(f);(void)(e);}while(0)
-#define _makepath(p,d,dir,f,e) do{(void)(p);(void)(d);(void)(dir);(void)(f);(void)(e);}while(0)
+static inline void _splitpath(const char *path, char *drive, char *dir, char *fname, char *ext) {
+    if (drive) drive[0] = '\0';
+    if (dir) dir[0] = '\0';
+    if (fname) fname[0] = '\0';
+    if (ext) ext[0] = '\0';
+    if (!path) return;
+    const char *p = path;
+    /* Find last separator */
+    const char *last_sep = NULL;
+    for (const char *s = p; *s; s++) { if (*s == '/' || *s == '\\') last_sep = s; }
+    const char *name_start = last_sep ? last_sep + 1 : p;
+    if (dir && last_sep) { int len = (int)(name_start - p); strncpy(dir, p, len); dir[len] = '\0'; }
+    /* Find extension */
+    const char *dot = NULL;
+    for (const char *s = name_start; *s; s++) { if (*s == '.') dot = s; }
+    if (dot) {
+        if (fname) { int len = (int)(dot - name_start); strncpy(fname, name_start, len); fname[len] = '\0'; }
+        if (ext) strcpy(ext, dot);
+    } else {
+        if (fname) strcpy(fname, name_start);
+    }
+}
+static inline void _makepath(char *path, const char *drive, const char *dir, const char *fname, const char *ext) {
+    if (!path) return;
+    path[0] = '\0';
+    if (drive && drive[0]) { strcat(path, drive); strcat(path, ":"); }
+    if (dir && dir[0]) strcat(path, dir);
+    if (fname && fname[0]) strcat(path, fname);
+    if (ext && ext[0]) strcat(path, ext);
+}
 #define strupr(s) _strupr_impl(s)
 #define memicmp(a,b,c) strncasecmp((const char*)(a),(const char*)(b),(c))
 

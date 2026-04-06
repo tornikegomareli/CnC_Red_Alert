@@ -104,14 +104,7 @@ int main(int argc, char **argv) {
         RequiredCD = -2;  // CD_LOCAL
         ra_log("Search drives set to ./, RequiredCD=-2\n");
 
-        // Pre-register MIX files for CnCNet distribution
-        // (CnCNet flattens the MIX hierarchy — files are top-level, not nested)
-        new MFCD("conquer.mix", &FastKey);
-        MFCD::Cache("conquer.mix");
-        new MFCD("general.mix", &FastKey);
-        new MFCD("sounds.mix", &FastKey);
-        new MFCD("speech.mix", &FastKey);
-        ra_log("CnCNet MIX files pre-registered\n");
+        ra_log("MIX files will be loaded by Init_Bootstrap_Mixfiles\n");
     }
 
     // Try calling the game's Init_Game

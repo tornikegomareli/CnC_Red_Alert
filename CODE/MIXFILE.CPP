@@ -277,8 +277,11 @@ MixFileClass<T>::MixFileClass(char const * filename, PKey const * key) :
 template<class T>
 void const * MixFileClass<T>::Retrieve(char const * filename)
 {
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[RETRIEVE] '%s'\n", filename ? filename : "NULL");
 	void * ptr = 0;
 	Offset(filename, &ptr);
+	ra_log("[RETRIEVE] '%s' -> %p\n", filename ? filename : "NULL", ptr);
 	return(ptr);
 };
 
@@ -486,8 +489,8 @@ void MixFileClass<T>::Free(void)
 
 int compfunc(void const * ptr1, void const * ptr2)
 {
-	if (*(long const *)ptr1 < *(long const *)ptr2) return(-1);
-	if (*(long const *)ptr1 > *(long const *)ptr2) return(1);
+	if (*(int32_t const *)ptr1 < *(int32_t const *)ptr2) return(-1);
+	if (*(int32_t const *)ptr1 > *(int32_t const *)ptr2) return(1);
 	return(0);
 }
 
@@ -525,25 +528,28 @@ int compfunc(void const * ptr1, void const * ptr2)
 template<class T>
 bool MixFileClass<T>::Offset(char const * filename, void ** realptr, MixFileClass ** mixfile, long * offset, long * size)
 {
+	extern void ra_log(const char *fmt, ...);
 	MixFileClass<T> * ptr;
 
 	if (filename == NULL) {
-assert(filename != NULL);//BG
 		return(false);
 	}
 
-	/*
-	**	Create the key block that will be used to binary search for the file.
-	*/
-	long crc = Calculate_CRC(strupr((char *)filename), strlen(filename));
+	char fname_upper[_MAX_PATH];
+	strncpy(fname_upper, filename, sizeof(fname_upper)-1);
+	fname_upper[sizeof(fname_upper)-1] = '\0';
+	strupr(fname_upper);
+	int32_t crc = (int32_t)Calculate_CRC(fname_upper, strlen(fname_upper));
 	SubBlock key;
 	key.CRC = crc;
 
-	/*
-	**	Sweep through all registered mixfiles, trying to find the file in question.
-	*/
+	ra_log("[MIX_OFFSET] Looking for '%s' crc=0x%08X\n", filename, (unsigned)crc);
+
 	ptr = List.First();
+	int mix_count = 0;
 	while (ptr->Is_Valid()) {
+		mix_count++;
+		if (mix_count > 100) { ra_log("[MIX_OFFSET] ERROR: infinite loop!\n"); return false; }
 		SubBlock * block;
 
 		/*
