@@ -187,6 +187,15 @@ pub fn build(b: *std.Build) void {
         .flags = cxx_flags,
     });
 
+    // Linker stubs need FUNCTION.H (they reference game types)
+    root_module.addCSourceFiles(.{
+        .root = b.path("src/compat"),
+        .files = &.{
+            "linker_stubs.cpp",
+        },
+        .flags = code_cxx_flags,
+    });
+
     // Create executable
     const exe = b.addExecutable(.{
         .name = "redalert",
