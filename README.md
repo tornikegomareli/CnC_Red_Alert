@@ -1,4 +1,4 @@
-# Command & Conquer Red Alert — macOS Port
+# Command & Conquer Red Alert — Raylib Port
 
 A work-in-progress port of Command & Conquer Red Alert to **macOS** using **Raylib** for rendering/input/audio and **Zig** as the build system.
 
@@ -20,23 +20,6 @@ The original source code was released by EA under GPL v3. This fork takes the ~5
 - VQA movie playback
 - Multiplayer networking
 - Full audio streaming (currently uses pre-decoded WAV)
-
-## Architecture
-
-The port follows a **non-invasive** approach — original sources stay mostly untouched, with the port living in `macredalert/`:
-
-```
-CnC_Red_Alert/
-├── CODE/              ← original game source (minimal changes)
-├── WIN32LIB/          ← original Win32 libraries (minimal changes)
-└── macredalert/       ← the macOS port
-    ├── build.zig      ← Zig build system
-    ├── src/
-    │   ├── platform/  ← Raylib backends (video, input, audio, entry point)
-    │   ├── compat/    ← Win32 API shim, ASM reimplementations in C
-    │   └── stubs/     ← fake Windows/DOS headers
-    └── build.zig.zon
-```
 
 ### Key Techniques
 
