@@ -101,18 +101,27 @@ void Raylib_Poll_Input(WWKeyboardClass *kbd) {
     if (g_mouse_y >= 400) g_mouse_y = 399;
 
     /* Feed mouse button events via public Put() method.
-     * The game encodes mouse buttons with WWKEY bits. */
+     * Mouse keys must be followed by X,Y coordinates in the buffer
+     * because Buff_Get() reads 2 extra elements for mouse events. */
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         kbd->Put(VK_LBUTTON);
+        kbd->Put((unsigned short)g_mouse_x);
+        kbd->Put((unsigned short)g_mouse_y);
     }
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         kbd->Put(VK_LBUTTON | 0x0800);  /* WWKEY_RLS_BIT */
+        kbd->Put((unsigned short)g_mouse_x);
+        kbd->Put((unsigned short)g_mouse_y);
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
         kbd->Put(VK_RBUTTON);
+        kbd->Put((unsigned short)g_mouse_x);
+        kbd->Put((unsigned short)g_mouse_y);
     }
     if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
         kbd->Put(VK_RBUTTON | 0x0800);
+        kbd->Put((unsigned short)g_mouse_x);
+        kbd->Put((unsigned short)g_mouse_y);
     }
 
     /* Feed keyboard events */
