@@ -85,8 +85,12 @@ extern "C" {
  * Polls all Raylib input and feeds it to the game.
  */
 void Raylib_Poll_Input(WWKeyboardClass *kbd) {
-    /* CRITICAL: Call PollInputEvents so Raylib processes OS events.
-     * Without this, the window becomes unresponsive. */
+    /* PollInputEvents processes OS events and must be called regularly.
+     * After polling, check for new input and inject into game's buffer.
+     * Use a flag to only inject mouse events once per poll cycle. */
+    static bool last_left_down = false;
+    static bool last_right_down = false;
+
     PollInputEvents();
 
     /* Scale mouse position from window coords to game coords */
@@ -103,26 +107,35 @@ void Raylib_Poll_Input(WWKeyboardClass *kbd) {
     /* Feed mouse button events via public Put() method.
      * Mouse keys must be followed by X,Y coordinates in the buffer
      * because Buff_Get() reads 2 extra elements for mouse events. */
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    /* Manual edge detection for mouse buttons — PollInputEvents resets
+     * Raylib's IsMouseButtonPressed state, so we track state ourselves */
+    bool left_down = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+    bool right_down = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
+
+    if (left_down && !last_left_down) {
         kbd->Put(VK_LBUTTON);
         kbd->Put((unsigned short)g_mouse_x);
         kbd->Put((unsigned short)g_mouse_y);
+        FILE *dbg = fopen("ra_port.log", "a");
+        if (dbg) { fprintf(dbg, "[INPUT] LEFT PRESS at (%d,%d)\n", g_mouse_x, g_mouse_y); fclose(dbg); }
     }
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-        kbd->Put(VK_LBUTTON | 0x0800);  /* WWKEY_RLS_BIT */
+    if (!left_down && last_left_down) {
+        kbd->Put(VK_LBUTTON | 0x0800);
         kbd->Put((unsigned short)g_mouse_x);
         kbd->Put((unsigned short)g_mouse_y);
     }
-    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+    if (right_down && !last_right_down) {
         kbd->Put(VK_RBUTTON);
         kbd->Put((unsigned short)g_mouse_x);
         kbd->Put((unsigned short)g_mouse_y);
     }
-    if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+    if (!right_down && last_right_down) {
         kbd->Put(VK_RBUTTON | 0x0800);
         kbd->Put((unsigned short)g_mouse_x);
         kbd->Put((unsigned short)g_mouse_y);
     }
+    last_left_down = left_down;
+    last_right_down = right_down;
 
     /* Feed keyboard events */
     int key;
