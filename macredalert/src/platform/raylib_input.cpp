@@ -158,9 +158,11 @@ void Raylib_Poll_Input(WWKeyboardClass *kbd) {
         GameActive = false;
     }
 
-    /* Render the game's framebuffer to the Raylib window.
-     * This is called from within the game's event loop so the display
-     * stays updated even when Select_Game() is blocking. */
+    /* Update audio stream */
+    extern void Raylib_Update_Audio(void);
+    Raylib_Update_Audio();
+
+    /* Render the game's framebuffer to the Raylib window */
     extern void Raylib_Render_Frame(void);
     Raylib_Render_Frame();
 }

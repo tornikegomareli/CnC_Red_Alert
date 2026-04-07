@@ -1269,7 +1269,8 @@ static inline void Stop_Sample(int handle) { (void)handle; }
 static inline int Stop_Sample_Playing(void const *sample) { (void)sample; return 0; }
 static inline void Sound_End(void) {}
 static inline int Fade_Sample(int handle, int ticks) { (void)handle;(void)ticks; return 0; }
-static inline int File_Stream_Sample_Vol(char const *name, int vol, int loop) { (void)name;(void)vol;(void)loop; return -1; }
+/* File_Stream_Sample_Vol provided by raylib_audio.cpp */
+int File_Stream_Sample_Vol(char const *name, int vol, int loop);
 static inline int Sample_Status(int handle) { (void)handle; return 0; }
 static inline void Set_Score_Vol(int vol) { (void)vol; }
 static inline int Start_Primary_Sound_Buffer(int forced=0) { (void)forced; return 0; }

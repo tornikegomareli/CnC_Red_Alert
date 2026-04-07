@@ -173,6 +173,7 @@ pub fn build(b: *std.Build) void {
         .files = &.{
             "entry_point.cpp",
             "raylib_input.cpp",
+            "raylib_audio.cpp",
         },
         .flags = cxx_flags,
     });
