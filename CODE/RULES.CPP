@@ -252,9 +252,9 @@ RulesClass::RulesClass(void) :
 	TriggerMax(60),
 	UnitMax(500),
 	VesselMax(100),
-	ProjectileMax(20),
-	WeaponMax(20),
-	WarheadMax(20),
+	ProjectileMax(50),
+	WeaponMax(50),
+	WarheadMax(50),
 	TrigTypeMax(80),
 	CloseEnoughDistance(0x0280),
 	StrayDistance(0x0200),
@@ -347,17 +347,22 @@ bool RulesClass::Process(CCINIClass & ini)
 {
 	BStart(BENCH_RULES);
 
-	General(ini);
-	MPlayer(ini);
-	Recharge(ini);
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[RULES] General...\n"); General(ini);
+	ra_log("[RULES] MPlayer...\n"); MPlayer(ini);
+	ra_log("[RULES] Recharge...\n"); Recharge(ini);
+	ra_log("[RULES] Heap_Maximums...\n");
+	ra_log("[RULES] WarheadMax=%d WeaponMax=%d\n", WarheadMax, WeaponMax);
 	Heap_Maximums(ini);
-	AI(ini);
-	Powerups(ini);
-	Land_Types(ini);
-	Themes(ini);
-	IQ(ini);
-	Objects(ini);
-	Difficulty(ini);
+	ra_log("[RULES] Heap_Maximums done\n");
+	ra_log("[RULES] AI...\n"); AI(ini);
+	ra_log("[RULES] Powerups...\n"); Powerups(ini);
+	ra_log("[RULES] Land_Types...\n"); Land_Types(ini);
+	ra_log("[RULES] Themes...\n"); Themes(ini);
+	ra_log("[RULES] IQ...\n"); IQ(ini);
+	ra_log("[RULES] Objects...\n"); Objects(ini);
+	ra_log("[RULES] Difficulty...\n"); Difficulty(ini);
+	ra_log("[RULES] All done!\n");
 
 	BEnd(BENCH_RULES);
 
@@ -635,7 +640,14 @@ bool RulesClass::Heap_Maximums(CCINIClass & ini)
 	**	Any heaps that use the maximums that were just loaded, must
 	**	be initialized as necessary.
 	*/
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[HEAP_MAX] Warheads.Set_Heap(%d)...\n", WarheadMax);
 	Warheads.Set_Heap(WarheadMax);
+	ra_log("[HEAP_MAX] Warheads heap set, size=%d, creating warhead types...\n", Warheads.Length());
+	ra_log("[HEAP_MAX] sizeof(WarheadTypeClass)=%lu\n", (unsigned long)sizeof(WarheadTypeClass));
+	void *p = Warheads.Alloc();
+	ra_log("[HEAP_MAX] Alloc returned %p\n", p);
+	if (p) Warheads.Free(p);
 	new WarheadTypeClass("SA");
 	new WarheadTypeClass("HE");
 	new WarheadTypeClass("AP");

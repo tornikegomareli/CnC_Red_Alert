@@ -38,7 +38,19 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include	"memory.h"
+// #include	"memory.h" — proprietary memory library, replaced with stub
+#include <stdlib.h>
+class MemoryClass {
+public:
+    void *Alloc(unsigned long size) { return malloc(size); }
+    void Free(void const *ptr) { free((void*)ptr); }
+    operator bool() const { return true; }
+};
+extern MemoryClass Mem;
+#include	<stdlib.h>
+#include	<string.h>
+
+extern bool GameActive;
 
 class AudioClass {
 		char const * Name;	// Name of audio asset.
@@ -87,7 +99,7 @@ inline AudioClass::AudioClass(char const *name, MemoryClass &mem)
 inline AudioClass::~AudioClass(void)
 {
 	if (GameActive) {
-		if (Name) free(Name);
+		if (Name) free((void*)Name);
 		if (Data) Mem->Free(Data);
 		Name = 0;
 		Data = 0;

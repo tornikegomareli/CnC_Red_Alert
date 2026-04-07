@@ -621,7 +621,8 @@ void ChronalVortexClass::Attack(void)
 	/*
 	** First scan - find any object directly above the vortex.
 	*/
-	for (unsigned i= 0; i < Map.Layer[LAYER_GROUND].Count(); i++) {
+	unsigned i;
+	for (i= 0; i < Map.Layer[LAYER_GROUND].Count(); i++) {
 		ObjectClass * obj = Map.Layer[LAYER_GROUND][i];
 
 		if ( obj->Is_Techno() && obj->Strength > 0 ) {

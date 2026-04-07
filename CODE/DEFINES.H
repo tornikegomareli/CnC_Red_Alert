@@ -34,7 +34,10 @@
  *---------------------------------------------------------------------------------------------*
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 #ifndef DEFINES_H
+#ifndef DEFINES_H
 #define DEFINES_H
+
+#include "fixed.h"
 
 /**********************************************************************
 **	Language control: define the desired language for this build.
@@ -3553,3 +3556,5 @@ typedef enum OptionControlType {
 
 
 #endif
+
+#endif // DEFINES_H

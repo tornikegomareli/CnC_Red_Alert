@@ -102,7 +102,7 @@ template<class T>
 int DynamicVectorClass<T>::Resize(unsigned newsize, T const * array)
 {
 	if (VectorClass<T>::Resize(newsize, array)) {
-		if (Length() < ActiveCount) ActiveCount = Length();
+		if (this->Length() < (unsigned)ActiveCount) ActiveCount = this->Length();
 		return(true);
 	}
 	return(false);

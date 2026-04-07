@@ -83,7 +83,8 @@ TurretClass::~TurretClass(void)
  * HISTORY:                                                                                    *
  *   08/13/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-TurretClass::TurretClass(void)
+TurretClass::TurretClass(void) :
+	DriveClass(NoInitClass())
 {
 }
 
@@ -106,7 +107,7 @@ TurretClass::TurretClass(void)
  *   02/02/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 TurretClass::TurretClass(UnitType classid, HousesType house) :
-	DriveClass(classid, house)
+	DriveClass(RTTI_UNIT, classid, house)
 {
 }
 

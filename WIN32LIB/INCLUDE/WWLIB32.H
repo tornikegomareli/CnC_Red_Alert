@@ -47,7 +47,9 @@
 #include <tile.h>
 #include <wwmem.h>
 #include <keyboard.h>
-#include <mouse.h>
+// mouse.h excluded - the game's MouseClass has deep dependencies on game headers.
+// FUNCTION.H includes mouse.h later after all game types are defined.
+// #include <mouse.h>
 #include <file.h>
 #include <rawfile.h>
 

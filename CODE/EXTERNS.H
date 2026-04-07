@@ -38,6 +38,7 @@
 #ifndef EXTERNS_H
 #define EXTERNS_H
 
+#include <dsound.h>
 #include	"cell.h"
 
 #ifdef SCENARIO_EDITOR
@@ -121,6 +122,7 @@ extern int 					AllDone;
 extern HANDLE 				hInstance;
 extern bool 				InMovie;
 extern WinTimerClass	*		WindowsTimer;
+class WWMouseClass;
 extern WWMouseClass *		WWMouse;
 extern GraphicBufferClass	HiddenPage;
 #define	SeenPage		SeenBuff
@@ -313,7 +315,7 @@ extern long							SidebarRedraws;
 extern DMonoType					MonoPage;
 extern bool							GameActive;
 extern bool							SpecialFlag;
-extern bool							ScenarioInit;
+extern int							ScenarioInit;
 extern HouseClass *				PlayerPtr;
 extern PaletteClass 				CCPalette;
 extern PaletteClass 				BlackPalette;

@@ -40,6 +40,10 @@
 #include	"function.h"
 #include	"confdlg.h"
 
+#ifndef TXT_CONFIRMATION
+#define TXT_CONFIRMATION TXT_CONFIRM_EXIT
+#endif
+
 
 bool ConfirmationClass::Process(int text)
 {

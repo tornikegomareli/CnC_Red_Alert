@@ -3600,8 +3600,9 @@ Rect const Shape_Dimensions(void const * shapedata, int shapenum)
 	/*
 	**	Find top edge of the shape.
 	*/
-	for (int y = 0; y <= ylimit; y++) {
-		for (int x = 0; x <= xlimit; x++) {
+	int x, y;
+	for (y = 0; y <= ylimit; y++) {
+		for (x = 0; x <= xlimit; x++) {
 			if (shape[y*width + x] != 0) {
 				rect.Y = y;
 				rect.X = x;
@@ -3628,7 +3629,7 @@ Rect const Shape_Dimensions(void const * shapedata, int shapenum)
 	/*
 	**	Find left edge of the shape.
 	*/
-	for (int x = 0; x < rect.X; x++) {
+	for (x = 0; x < rect.X; x++) {
 		for (y = rect.Y; y < rect.Y+rect.Height; y++) {
 			if (shape[y*width + x] != 0) {
 				rect.X = x;
@@ -4533,7 +4534,7 @@ bool Force_CD_Available( int cd_desired )				//	ajw
 			if( cd_desired == CD_DVD )
 			{
 				#ifdef FRENCH
-			   	sprintf(buffer, "InsŠrez le %s",  _cd_name[4]);
+			   	sprintf(buffer, "Insï¿½rez le %s",  _cd_name[4]);
 				#else
 				#ifdef GERMAN
 				sprintf(buffer, "Bitte %s",  _cd_name[4]);
@@ -4545,7 +4546,7 @@ bool Force_CD_Available( int cd_desired )				//	ajw
 			else if( cd_desired == CD_COUNTERSTRIKE || cd_desired == CD_AFTERMATH )
 			{
 				#ifdef FRENCH
-			   	sprintf(buffer, "InsŠrez le %s",  _cd_name[cd_desired]);
+			   	sprintf(buffer, "Insï¿½rez le %s",  _cd_name[cd_desired]);
 				#else
 				#ifdef GERMAN
 				sprintf(buffer, "Bitte %s",  _cd_name[cd_desired]);
@@ -4929,7 +4930,7 @@ bool Force_CD_Available(int cd)
 			#endif
 
 				#ifdef FRENCH
-			   	sprintf(buffer, "InsŠrez le %s",  _cd_name[cd]);
+			   	sprintf(buffer, "Insï¿½rez le %s",  _cd_name[cd]);
 				#else
 				#ifdef GERMAN
 				sprintf(buffer, "Bitte %s",  _cd_name[cd]);
@@ -4942,7 +4943,7 @@ bool Force_CD_Available(int cd)
 				{
 				#ifdef DVD
 				#ifdef FRENCH
-			   	sprintf(buffer, "InsŠrez le %s", _cd_name[4]);
+			   	sprintf(buffer, "Insï¿½rez le %s", _cd_name[4]);
 				#else
 				#ifdef GERMAN 
 				sprintf(buffer, "Bitte %s", _cd_name[4]);

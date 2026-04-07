@@ -741,7 +741,8 @@ void CellClass::Overlap_Down(ObjectClass * object)
 
 	if (!object) return;
 
-	for (int index = 0; index < ARRAY_SIZE(Overlapper); index++) {
+	int index;
+	for (index = 0; index < ARRAY_SIZE(Overlapper); index++) {
 		if (Overlapper[index] == object) return;
 		if (!Overlapper[index]) ptr = &Overlapper[index];
 	}
@@ -2114,7 +2115,8 @@ bool CellClass::Goodie_Check(FootClass * object)
 		**	the base pool to determine the odds from.
 		*/
 		int total_shares = 0;
-		for (int index = CRATE_FIRST; index < CRATE_COUNT; index++) {
+		int index;
+		for (index = CRATE_FIRST; index < CRATE_COUNT; index++) {
 			total_shares += CrateShares[index];
 		}
 

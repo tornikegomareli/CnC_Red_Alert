@@ -62,7 +62,7 @@ void CRCEngine::operator() (char datum)
 {
 	StagingBuffer.Buffer[Index++] = datum;
 
-	if (Index == sizeof(long))  {
+	if (Index == 4)  {  /* 4 bytes = original Watcom sizeof(long) */
 		CRC = Value();
 		StagingBuffer.Composite = 0;
 		Index = 0;
@@ -110,11 +110,14 @@ long CRCEngine::operator() (void const * buffer, int length)
 		**	Perform the fast 'bulk' processing by reading long word sized
 		**	data blocks.
 		*/
-		long const * longptr = (long const *)dataptr;
-		int longcount = bytes_left / sizeof(long);		// Whole 'long' elements remaining.
+		/* Process in 4-byte chunks (original used sizeof(long)=4 on Watcom) */
+		int32_t const * longptr = (int32_t const *)dataptr;
+		int longcount = bytes_left / 4;
 		while (longcount--) {
-			CRC = _lrotl(CRC, 1) + *longptr++;
-			bytes_left -= sizeof(long);
+			uint32_t v = (uint32_t)CRC;
+			v = (v << 1) | (v >> 31);
+			CRC = (int32_t)(v + (uint32_t)*longptr++);
+			bytes_left -= 4;
 		}
 
 		/*

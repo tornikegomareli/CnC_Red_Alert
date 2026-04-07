@@ -143,7 +143,8 @@ int LayerClass::Sorted_Add(ObjectClass const * const object)
 	/*
 	**	There is room for the new object now. Add it to the right sorted position.
 	*/
-	for (int index = 0; index < ActiveCount; index++) {
+	int index;
+	for (index = 0; index < ActiveCount; index++) {
 		if ((*(*this)[index]) > (*object)) {
 			break;
 		}

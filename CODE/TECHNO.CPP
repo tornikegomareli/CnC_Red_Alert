@@ -158,7 +158,7 @@ const char* NewName[] = {
 	"Scout Ant",	  			"Kundschafter-Ameise",
 	"Warrior Ant",    		"Krieger-Ameise",
 	"Fire Ant",	  				"Feuer-Ameise",
-	"Queen Ant",	  			"Ameisenk”nigin",
+	"Queen Ant",	  			"Ameisenkï¿½nigin",
 	"ATS",						"Angriffs-U-Boot",
 	"Tesla Tank",	  			"Telsapanzer",
 	"Volkov",  					"Modell Volkov",
@@ -174,7 +174,7 @@ const char* NewName[] = {
 #ifdef FRENCH
 const char* NewName[] = {
 	"Scout Ant",	  			"Fourmi de Reconnaissance",
-	"Warrior Ant",    		"Fourmi GuerriŠre",
+	"Warrior Ant",    		"Fourmi Guerriï¿½re",
 	"Fire Ant",	  				"Fourmi Lance-Flammes",
 	"Queen Ant",	  			"Reine des Fourmis",
 	"ATS", 						"SMTA",
@@ -182,9 +182,9 @@ const char* NewName[] = {
 	"Volkov",  					"Volkov",
 	"Chitzkoi", 				"Cyber-Chien",
 	"Stavros",					"Stavros",
-	"F-A Longbow",				"HAA (H‚licoptŠre d'Assaut Avanc‚)",
-	"Civilian Specialist",	"Sp‚cialiste Civil",
-	"Alloy Facility",			"Usine M‚tallurgique",
+	"F-A Longbow",				"HAA (Hï¿½licoptï¿½re d'Assaut Avancï¿½)",
+	"Civilian Specialist",	"Spï¿½cialiste Civil",
+	"Alloy Facility",			"Usine Mï¿½tallurgique",
 	NULL,
 	};
 
@@ -1674,7 +1674,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method, int mask, int range, Techno
 	**	the fake building's value.
 	*/
 	if ((method & THREAT_FAKES) && otype == RTTI_BUILDING) {
-		switch (!((BuildingTypeClass const *)tclass)->Type) {
+		switch (((BuildingTypeClass const *)tclass)->Type) {
 			case STRUCT_FAKECONST:
 			case STRUCT_FAKEWEAP:
 			case STRUCT_FAKE_YARD:
@@ -3790,7 +3790,7 @@ bool TechnoClass::Captured(HouseClass * newowner)
  * HISTORY:                                                                                    *
  *   06/20/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, int forced)
+ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
 {
 	assert(IsActive);
 
@@ -4685,7 +4685,8 @@ void TechnoClass::Base_Is_Attacked(TechnoClass const * enemy)
 	** Loop through the infantry looking for those who are capable of going
 	** on a rescue mission.
 	*/
-	for (int index = 0; index < Infantry.Count() && desired > 0; index++) {
+	int index;
+	for (index = 0; index < Infantry.Count() && desired > 0; index++) {
 	 	InfantryClass * infantry = Infantry.Ptr(index);
 		if (infantry != NULL && infantry->Owner() == Owner()) {
 
@@ -4872,7 +4873,7 @@ void TechnoClass::Base_Is_Attacked(TechnoClass const * enemy)
 			}
 		}
 
-		for (lp = 0; lp < count; lp ++) {
+		for (int lp = 0; lp < count; lp ++) {
 			if (Percent_Chance(50)) {
 				defender[lp]->Assign_Mission(MISSION_RESCUE);
 			} else {

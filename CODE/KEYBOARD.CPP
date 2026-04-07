@@ -297,7 +297,7 @@ char WWKeyboardClass::To_ASCII(unsigned short key)
 }
 
 
-WWKeyboardClass::Down(unsigned short key)
+bool WWKeyboardClass::Down(unsigned short key)
 {
 	return(GetAsyncKeyState(key & 0xFF));
 }
@@ -360,17 +360,17 @@ bool WWKeyboardClass::Is_Buffer_Empty(void) const
 }
 
 
+/*
+ * Raylib input bridge — called from entry_point.cpp's Raylib event loop.
+ * Feeds Raylib keyboard/mouse events into the game's key buffer.
+ */
+extern "C" void Raylib_Poll_Input(WWKeyboardClass *kbd);
+
 void WWKeyboardClass::Fill_Buffer_From_System(void)
 {
 	if (!Is_Buffer_Full()) {
-		MSG	msg;
-		while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-		  	if (!GetMessage( &msg, NULL, 0, 0 )) {
-				return;
-			}
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+		/* Call the Raylib input bridge to poll events and feed keys */
+		Raylib_Poll_Input(this);
 	}
 }
 
@@ -381,7 +381,7 @@ void WWKeyboardClass::Clear(void)
 }
 
 
-void WWKeyboardClass::Message_Handler(HWND , UINT message, UINT wParam, LONG lParam)
+bool WWKeyboardClass::Message_Handler(HWND , UINT message, UINT wParam, LONG lParam)
 {
 	switch (message) {
 		case WM_SYSKEYDOWN:

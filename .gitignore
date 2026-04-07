@@ -1,0 +1,20 @@
+# Build artifacts
+macredalert/.zig-cache/
+macredalert/zig-out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Claude
+CLAUDE.md
+*.o
+*.mix
+*.ini
+ra_port.log
+windows_original_installer_fullgame/
+englishvideobasepack/

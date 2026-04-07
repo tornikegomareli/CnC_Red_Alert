@@ -673,3 +673,32 @@ void BooleanVectorClass::Fixup(int index) const
 }
 
 
+
+/*
+** Explicit template instantiations for macOS port.
+** Watcom implicitly instantiated these; clang needs them explicit.
+*/
+template class VectorClass<CellClass>;
+template class VectorClass<ObjectClass*>;
+template class VectorClass<char const*>;
+template class VectorClass<char*>;
+template class VectorClass<void*>;
+template class VectorClass<TriggerClass*>;
+template class VectorClass<BaseNodeClass>;
+template class VectorClass<RemapControlType*>;
+template class VectorClass<FileEntryClass*>;
+template class VectorClass<MultiMission*>;
+template class VectorClass<NodeNameTag*>;
+template class VectorClass<PhoneEntryClass*>;
+
+template class DynamicVectorClass<ObjectClass*>;
+template class DynamicVectorClass<TriggerClass*>;
+template class DynamicVectorClass<char const*>;
+template class DynamicVectorClass<char*>;
+template class DynamicVectorClass<void*>;
+template class DynamicVectorClass<BaseNodeClass>;
+template class DynamicVectorClass<RemapControlType*>;
+template class DynamicVectorClass<PhoneEntryClass*>;
+template class DynamicVectorClass<FileEntryClass*>;
+template class DynamicVectorClass<MultiMission*>;
+template class DynamicVectorClass<NodeNameTag*>;

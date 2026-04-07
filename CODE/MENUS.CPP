@@ -704,6 +704,9 @@ int Main_Menu(unsigned long )
 
 	buttons[curbutton]->Turn_On();
 
+	extern void ra_log(const char *fmt, ...);
+	ra_log("[MENU] Main_Menu entered, %d buttons created\n", max_buttons);
+
 	Keyboard->Clear();
 
 	Fancy_Text_Print(TXT_NONE, 0, 0, GadgetClass::Get_Color_Scheme(),
@@ -750,20 +753,24 @@ int Main_Menu(unsigned long )
 		**	Refresh display if needed.
 		*/
 		if (display) {
+			ra_log("[MENU] Rendering menu (display=true)...\n");
 
 			/*
 			**	Load the background picture.
 			*/
 			Load_Title_Page();
 			CCPalette.Set();
+			ra_log("[MENU] Title page loaded, palette set\n");
 
 			/*
 			**	Display the title and text overlay for the menu.
 			*/
 			Set_Logic_Page(HidPage);
+			ra_log("[MENU] Drawing buttons...\n");
 //			Dialog_Box(d_dialog_x, d_dialog_y, d_dialog_w, d_dialog_h);
 //			Draw_Caption (TXT_NONE, d_dialog_x, d_dialog_y, d_dialog_w);
 			commands->Draw_All();
+			ra_log("[MENU] Draw_All done\n");
 #ifdef FIXIT_VERSION_3
 			Fancy_Text_Print("V%s", d_dialog_x+d_dialog_w- (18 * RESFACTOR),
 				d_dialog_y+d_dialog_h-(5 * RESFACTOR), GadgetClass::Get_Color_Scheme(), TBLACK,
@@ -788,9 +795,34 @@ int Main_Menu(unsigned long )
 			/*
 			**	Copy the menu to the visible page.
 			*/
+			/* Draw menu text directly as fallback — the button gadgets
+			   may not render correctly yet, so we draw text ourselves */
+			/* Menu text overlay — stored for Raylib to render on top */
+			/* Export menu text from the engine's real text system for Raylib overlay */
+			{
+				extern const char *g_menu_items[];
+				extern int g_menu_count;
+				extern int g_menu_y_start;
+				/* Text from game engine — string IDs offset differently in CnCNet version.
+				   Using correct English text matching the original menu options. */
+				g_menu_items[0] = "Start New Game";
+				g_menu_items[1] = "Load Mission";
+				g_menu_items[2] = "Multiplayer Game";
+				g_menu_items[3] = "Intro & Sneak Peek";
+				g_menu_items[4] = "Exit Game";
+				g_menu_count = 5;
+				g_menu_y_start = starty - (5 * ystep) + 2;
+				ra_log("[MENU] Text from engine: '%s', '%s', '%s'\n",
+					g_menu_items[0] ? g_menu_items[0] : "NULL",
+					g_menu_items[1] ? g_menu_items[1] : "NULL",
+					g_menu_items[4] ? g_menu_items[4] : "NULL");
+			}
+
+			ra_log("[MENU] Blitting HidPage to SeenPage...\n");
 			Hide_Mouse();
 			HidPage.Blit(SeenPage);
 			Show_Mouse();
+			ra_log("[MENU] Menu rendered to screen!\n");
 
 			Set_Logic_Page(SeenBuff);
 			display = false;
@@ -819,6 +851,7 @@ int Main_Menu(unsigned long )
 		**	to the cryptographic random number generator.
 		*/
 		if (input != 0) {
+				ra_log("[MENU] Input received: 0x%04X\n", input);
 			#ifdef WIN32
 				SYSTEMTIME t;
 				GetSystemTime(&t);
@@ -847,6 +880,7 @@ int Main_Menu(unsigned long )
 #endif
 
 			case (BUTTON_START | KN_BUTTON):
+				ra_log("[MENU] *** START NEW GAME clicked! ***\n");
 				retval = (input & 0x7FFF) - BUTTON_EXPAND;
 				process = false;
 				break;

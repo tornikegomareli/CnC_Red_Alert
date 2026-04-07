@@ -65,8 +65,8 @@
 #include	<stdlib.h>
 #include	<stddef.h>
 
-inline void * operator new(size_t , void * pointer) {return(pointer);}
-inline void * operator new[](size_t , void * pointer) {return(pointer);}
+#include <new>
+// Placement new already defined in <new> for modern C++
 
 
 /**************************************************************************

@@ -316,7 +316,7 @@ void InfantryClass::operator delete(void * ptr)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   03/31/1995 JLB : Revenge factor.                                                          *
  *=============================================================================================*/
-ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, int forced)
+ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
 {
 	assert(Infantry.ID(this) == ID);
 	assert(IsActive);
@@ -1901,7 +1901,8 @@ void InfantryClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
 
 		CELL newcell = 0;
 		CELL altcell = 0;
-		for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+		FacingType face;
+		for (face = FACING_N; face < FACING_COUNT; face++) {
 			FacingType newface = toface + face;
 			newcell = Adjacent_Cell(Coord_Cell(Coord), newface);
 

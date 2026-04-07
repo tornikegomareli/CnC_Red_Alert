@@ -62,8 +62,12 @@ class INIClass {
 		*/
 		bool Load(FileClass & file);
 		bool Load(Straw & file);
+		bool Load(FileClass && file) { return Load(file); }
+		bool Load(Straw && file) { return Load(file); }
 		int Save(FileClass & file) const;
 		int Save(Pipe & file) const;
+		int Save(FileClass && file) const { return Save(file); }
+		int Save(Pipe && file) const { return Save(file); }
 
 		/*
 		**	Erase all data within this INI file manager.

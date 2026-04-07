@@ -1,0 +1,11 @@
+.{
+    .name = .redalert,
+    .version = "0.1.0",
+    .fingerprint = 0x1063d656266eb5cf,
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}

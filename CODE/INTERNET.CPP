@@ -322,7 +322,8 @@ int Read_Game_Options(char *name)
 	//WWDebugString ("\n");
 
 	Session.Options.ScenarioIndex = -1;
-	for (int i = 0; i < Session.Scenarios.Count(); i++) {
+	int i;
+	for (i = 0; i < Session.Scenarios.Count(); i++) {
 		if (!strcmp (Session.Scenarios[i]->Description(), Session.Options.ScenarioDescription) ){
 			Session.Options.ScenarioIndex = i;
 			break;

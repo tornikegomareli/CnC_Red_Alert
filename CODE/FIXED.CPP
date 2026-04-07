@@ -131,7 +131,7 @@ fixed::fixed(char const * ascii)
 			Data.Composite.Whole = (unsigned char)atoi(wholepart);
 		}
 
-		char * fracpart = strchr(ascii, '.');
+		char * fracpart = (char *)strchr(ascii, '.');
 		if (fracpart) fracpart++;
 		if (fracpart) {
 			int frac = atoi(fracpart);

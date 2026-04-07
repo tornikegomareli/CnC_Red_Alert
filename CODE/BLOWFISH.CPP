@@ -61,7 +61,7 @@ typedef union {
 		unsigned char C1;
 		unsigned char C0;
 	} Char;
-} Int;
+} BlowfishInt;
 
 
 /***********************************************************************************************
@@ -355,13 +355,13 @@ void BlowfishEngine::Process_Block(void const * plaintext, void * cyphertext, un
 	**	could be done for big endian processors in that case.
 	*/
 	unsigned char const * source = (unsigned char const *)plaintext;
-	Int left;
+	BlowfishInt left;
 	left.Char.C0 = *source++;
 	left.Char.C1 = *source++;
 	left.Char.C2 = *source++;
 	left.Char.C3 = *source++;
 
-	Int right;
+	BlowfishInt right;
 	right.Char.C0 = *source++;
 	right.Char.C1 = *source++;
 	right.Char.C2 = *source++;
@@ -430,10 +430,10 @@ void BlowfishEngine::Process_Block(void const * plaintext, void * cyphertext, un
  *=============================================================================================*/
 void BlowfishEngine::Sub_Key_Encrypt(unsigned long & left, unsigned long & right)
 {
-	Int l;
+	BlowfishInt l;
 	l.Long = left;
 
-	Int r;
+	BlowfishInt r;
 	r.Long = right;
 
 	for (int index = 0; index < ROUNDS; index += 2) {

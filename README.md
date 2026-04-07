@@ -1,39 +1,79 @@
+# Command & Conquer Red Alert — macOS Port
 
-# Command & Conquer Red Alert
+A work-in-progress port of Command & Conquer Red Alert to **macOS** using **Raylib** for rendering/input/audio and **Zig** as the build system.
 
-This repository includes source code for Command & Conquer Red Alert. This release provides support to the [Steam Workshop](https://steamcommunity.com/workshop/browse/?appid=2229840) for the game.
+The original source code was released by EA under GPL v3. This fork takes the ~572 C++ files and ~268 x86 ASM files from 1996 and makes them compile and run on modern macOS (Apple Silicon / x86_64).
 
+## Current Status
 
-## Dependencies
+- **Compiles and links** on macOS with zero errors (Zig + clang)
+- **Game initializes** — MIX archives load, RULES.INI parses, fonts init
+- **Title screen renders** — 8-bit palettized framebuffer displayed via Raylib
+- **Main menu interactive** — mouse clicks detected, menu buttons work
+- **Audio plays** — Westwood AUD format (IMA ADPCM) decoded and streamed
+- **Input works** — keyboard and mouse mapped from Raylib to game's VK_ codes
 
-If you wish to rebuild the source code and tools successfully you will need to find or write new replacements (or remove the code using them entirely) for the following libraries;
+### What's Not Done Yet
 
-- DirectX 5 SDK
-- DirectX Media 5.1 SDK
-- Greenleaf Communications Library (GCL)
-- Human Machine Interface (HMI) “Sound Operating System” (SOS)
+- In-game rendering (scenario loading after menu)
+- Proper bitmap font rendering (game's FNT format partially implemented)
+- VQA movie playback
+- Multiplayer networking
+- Full audio streaming (currently uses pre-decoded WAV)
 
+## Architecture
 
-## Compiling (Win32 Only)
+The port follows a **non-invasive** approach — original sources stay mostly untouched, with the port living in `macredalert/`:
 
-The current state of the source code does not fully compile and will require some effort to restore it. If you wish to restore the original build environment, the following tools are required;
+```
+CnC_Red_Alert/
+├── CODE/              ← original game source (minimal changes)
+├── WIN32LIB/          ← original Win32 libraries (minimal changes)
+└── macredalert/       ← the macOS port
+    ├── build.zig      ← Zig build system
+    ├── src/
+    │   ├── platform/  ← Raylib backends (video, input, audio, entry point)
+    │   ├── compat/    ← Win32 API shim, ASM reimplementations in C
+    │   └── stubs/     ← fake Windows/DOS headers
+    └── build.zig.zon
+```
 
-- Watcom C/C++ (v10.6) for C/C++ source files
-- Borland Turbo Assembler (TASM v4.0) for assembly files
+### Key Techniques
 
-To use the compiled binaries, you must own the game. The C&C Ultimate Collection is available for purchase on [EA App](https://www.ea.com/en-gb/games/command-and-conquer/command-and-conquer-the-ultimate-collection/buy/pc) or [Steam](https://store.steampowered.com/bundle/39394/Command__Conquer_The_Ultimate_Collection/).
+- **Win32 API shim** (`platform.h`) — 1200+ lines mapping Windows types and functions to POSIX/macOS equivalents
+- **ASM → C rewrite** — all x86 assembly (graphics primitives, LCW compression, shape drawing) reimplemented in portable C
+- **8-bit → RGBA pipeline** — game renders to RAM buffers at 640×400 @ 8bpp, converted via palette LUT, displayed through Raylib `Texture2D`
+- **MIX archive I/O** — CRC-based file lookup fixed for 64-bit (original used `long` which is 8 bytes on arm64)
 
+## Building
 
-## Contributing
+### Prerequisites
 
-This repository will not be accepting contributions (pull requests, issues, etc). If you wish to create changes to the source code and encourage collaboration, please create a fork of the repository under your GitHub user/organization space.
+- [Zig](https://ziglang.org/download/) (0.15+)
+- [Raylib](https://www.raylib.com/) (installed via Homebrew: `brew install raylib`)
+- Game data files from a legal copy of Red Alert ([Steam](https://store.steampowered.com/bundle/39394/Command__Conquer_The_Ultimate_Collection/) or [EA App](https://www.ea.com/en-gb/games/command-and-conquer/command-and-conquer-the-ultimate-collection/buy/pc))
 
+### Build & Run
 
-## Support
+```bash
+cd macredalert
+zig build
 
-This repository is for preservation purposes only and is archived without support. 
+# Copy game data files (MIX archives) to the build output directory
+cp /path/to/redalert/data/*.MIX zig-out/bin/
 
+# Run
+./zig-out/bin/redalert
+```
 
-## License
+Raylib paths default to Homebrew's Apple Silicon location (`/opt/homebrew/`). Override with:
 
-This repository and its contents are licensed under the GPL v3 license, with additional terms applied. Please see [LICENSE.md](LICENSE.md) for details.
+```bash
+zig build -Draylib-include=/path/to/raylib/include -Draylib-lib=/path/to/raylib/lib
+```
+
+## Original Source
+
+This is a fork of [EA's official release](https://github.com/electronicarts/CnC_Red_Alert) of the Command & Conquer Red Alert source code under GPL v3. See [LICENSE.md](LICENSE.md) for details.
+
+To use the compiled game, you must own a legal copy of Command & Conquer Red Alert.

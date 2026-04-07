@@ -1710,7 +1710,8 @@ void TeamTypeClass::Fill_In(char * name, char * entry)
 	**	Fetch the team member types and quantity values.
 	*/
 	ClassCount = atoi(strtok(NULL, ","));
-	for (int index = 0; index < ClassCount; index++) {
+	int index;
+	for (index = 0; index < ClassCount; index++) {
 		char * p1 = strtok(NULL, ",:");
 		char * p2 = strtok(NULL, ",:");
 		TechnoTypeClass const * otype = NULL;
@@ -1860,7 +1861,8 @@ void TeamTypeClass::Build_INI_Entry(char * buf)
 	*/
 	sprintf (buf, ",%d", ClassCount);
 	buf += strlen(buf);
-	for (int i = 0; i < ClassCount; i++) {
+	int i;
+	for (i = 0; i < ClassCount; i++) {
 		sprintf (buf, ",%s:%d", Members[i].Class->IniName, Members[i].Quantity);
 		buf += strlen(buf);
 	}
