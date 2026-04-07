@@ -158,8 +158,8 @@ void Raylib_Poll_Input(WWKeyboardClass *kbd) {
         GameActive = false;
     }
 
-    /* Update audio stream */
-    extern void Raylib_Update_Audio(void);
+    /* Update audio stream — must be called every frame */
+    void Raylib_Update_Audio(void);
     Raylib_Update_Audio();
 
     /* Render the game's framebuffer to the Raylib window */

@@ -175,9 +175,10 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
         return -1;
     }
 
-    /* Decode all chunks */
-    int total_samples = aud_uncomp / 2; /* 16-bit samples */
-    short *pcm = new short[total_samples + 4096];
+    /* Decode all chunks — allocate generous buffer.
+     * Don't trust aud_uncomp as it may be wrong. Allocate based on file size. */
+    int total_samples = file_size * 4; /* Worst case: each byte → 2 samples × safety */
+    short *pcm = new short[total_samples];
     int pcm_offset = 0;
 
     unsigned char *ptr = data + 12; /* Skip AUD header */
@@ -282,8 +283,14 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
 /*
  * Update music stream — must be called regularly from the render loop
  */
+static int update_count = 0;
 extern "C" void Raylib_Update_Audio(void) {
     if (g_music_playing) {
         UpdateMusicStream(g_current_music);
+        if (update_count < 5) {
+            ra_log("[AUDIO] UpdateMusicStream called (playing=%d, time=%.1f)\n",
+                   IsMusicStreamPlaying(g_current_music), GetMusicTimePlayed(g_current_music));
+            update_count++;
+        }
     }
 }

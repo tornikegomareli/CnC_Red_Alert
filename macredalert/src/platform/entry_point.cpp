@@ -126,6 +126,10 @@ extern "C" void Raylib_Render_Frame(void) {
         }
     }
 
+    /* Update music stream every render frame */
+    void Raylib_Update_Audio(void);
+    Raylib_Update_Audio();
+
     DrawFPS(g_game_width * 2 - 90, 10);
     EndDrawing();
 }
