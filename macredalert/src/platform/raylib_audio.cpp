@@ -125,12 +125,8 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
 
     if (!name) return -1;
 
-    /* Initialize Raylib audio if needed */
-    if (!g_audio_initialized) {
-        InitAudioDevice();
-        g_audio_initialized = true;
-        ra_log("[AUDIO] Audio device initialized\n");
-    }
+    /* Audio device should already be initialized in entry_point.cpp */
+    g_audio_initialized = true;
 
     /* Stop any currently playing music */
     if (g_music_playing) {
@@ -140,35 +136,47 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
     }
 
     /* Open the AUD file via the game's file system */
+    const char *actual_name = name;
     CCFileClass file(name);
     if (!file.Is_Available()) {
-        ra_log("[AUDIO] File not available: %s\n", name);
-        return -1;
+        /* Fallback: try THEME0.AUD (extracted from scores.mix) */
+        ra_log("[AUDIO] '%s' not in MIX, trying THEME0.AUD\n", name);
+        actual_name = "THEME0.AUD";
+        file.Set_Name(actual_name);
+        if (!file.Is_Available()) {
+            ra_log("[AUDIO] No fallback available\n");
+            return -1;
+        }
     }
 
     int file_size = file.Size();
-    ra_log("[AUDIO] File size: %d\n", file_size);
+    ra_log("[AUDIO] Loading '%s' (%d bytes)\n", actual_name, file_size);
 
     file.Open(READ);
     unsigned char *data = new unsigned char[file_size];
     file.Read(data, file_size);
     file.Close();
 
-    /* Parse AUD header */
+    /* Parse AUD header manually (avoid struct packing issues) */
     if (file_size < 12) { delete[] data; return -1; }
-    AUDHeader *hdr = (AUDHeader *)data;
+
+    unsigned short aud_rate = data[0] | (data[1] << 8);
+    unsigned int aud_uncomp = data[2] | (data[3] << 8) | (data[4] << 16) | (data[5] << 24);
+    unsigned int aud_comp = data[6] | (data[7] << 8) | (data[8] << 16) | (data[9] << 24);
+    unsigned char aud_flags = data[10];
+    unsigned char aud_type = data[11];
 
     ra_log("[AUDIO] AUD: rate=%d, uncomp=%d, comp=%d, flags=0x%02X, type=%d\n",
-           hdr->rate, hdr->uncomp_size, hdr->comp_size, hdr->flags, hdr->comp_type);
+           aud_rate, aud_uncomp, aud_comp, aud_flags, aud_type);
 
-    if (hdr->comp_type != 99) {
-        ra_log("[AUDIO] Unsupported compression type %d\n", hdr->comp_type);
+    if (aud_type != 99) {
+        ra_log("[AUDIO] Unsupported compression type %d\n", aud_type);
         delete[] data;
         return -1;
     }
 
     /* Decode all chunks */
-    int total_samples = hdr->uncomp_size / 2; /* 16-bit samples */
+    int total_samples = aud_uncomp / 2; /* 16-bit samples */
     short *pcm = new short[total_samples + 4096];
     int pcm_offset = 0;
 
@@ -176,23 +184,31 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
     unsigned char *end = data + file_size;
 
     while (ptr + 8 <= end && pcm_offset < total_samples) {
-        AUDChunkHeader *chunk = (AUDChunkHeader *)ptr;
+        /* AUD chunk header (8 bytes):
+         * [0-1] = compressed size of this chunk
+         * [2-3] = uncompressed size of this chunk
+         * [4-7] = ID marker (should contain 0xDEAF) */
+        unsigned short chunk_comp = ptr[0] | (ptr[1] << 8);
+        unsigned short chunk_uncomp = ptr[2] | (ptr[3] << 8);
+        unsigned int chunk_id = ptr[4] | (ptr[5] << 8) | (ptr[6] << 16) | (ptr[7] << 24);
 
-        /* Validate chunk */
-        if ((chunk->id & 0x0000FFFF) != 0xDEAF) break;
+        if ((chunk_id & 0x0000FFFF) != 0xDEAF) {
+            ra_log("[AUDIO] Bad chunk at offset %ld, id=0x%08X\n", (long)(ptr - data), chunk_id);
+            break;
+        }
 
-        ptr += 8; /* Skip chunk header */
-        if (ptr + chunk->comp_size > end) break;
+        ptr += 8;
+        if (ptr + chunk_comp > end) break;
 
-        int decoded = decode_ima_adpcm(ptr, chunk->comp_size,
+        int decoded = decode_ima_adpcm(ptr, chunk_comp,
                                         pcm + pcm_offset,
                                         total_samples - pcm_offset);
         pcm_offset += decoded;
-        ptr += chunk->comp_size;
+        ptr += chunk_comp;
     }
 
     ra_log("[AUDIO] Decoded %d samples (%.1f seconds)\n",
-           pcm_offset, (float)pcm_offset / hdr->rate);
+           pcm_offset, (float)pcm_offset / aud_rate);
 
     if (pcm_offset == 0) {
         delete[] pcm;
@@ -225,7 +241,7 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
         fwrite(&audio_fmt, 2, 1, wav);
         short num_channels = channels;
         fwrite(&num_channels, 2, 1, wav);
-        int sample_rate = hdr->rate;
+        int sample_rate = aud_rate;
         fwrite(&sample_rate, 4, 1, wav);
         int byte_rate = sample_rate * channels * bits / 8;
         fwrite(&byte_rate, 4, 1, wav);
@@ -246,7 +262,8 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
         g_current_music = LoadMusicStream(wav_path);
         if (g_current_music.frameCount > 0) {
             g_current_music.looping = (loop != 0);
-            SetMusicVolume(g_current_music, volume / 255.0f);
+            SetMasterVolume(1.0f);
+            SetMusicVolume(g_current_music, 1.0f);
             PlayMusicStream(g_current_music);
             g_music_playing = true;
             ra_log("[AUDIO] Playing music! Duration: %.1fs\n",

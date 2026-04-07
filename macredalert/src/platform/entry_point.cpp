@@ -140,7 +140,9 @@ int main(int argc, char **argv) {
 
     SetTraceLogLevel(LOG_WARNING);
     InitWindow(GAME_WIDTH * SCALE, GAME_HEIGHT * SCALE, "C&C Red Alert — macOS Port");
+    InitAudioDevice();
     SetTargetFPS(30);
+    ra_log("Audio device initialized from entry_point\n");
 
     GameActive = true;
     GameInFocus = true;

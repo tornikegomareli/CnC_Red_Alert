@@ -1260,8 +1260,8 @@ static inline int Get_Mouse_State(void) { return 0; }
 /* Audio system stubs (module excluded, functions referenced from core game) */
 /* SampleType and SoundType are global variables in the original audio system,
    used as booleans to check if the sound system is initialized */
-static inline int SampleType = 0;
-static inline int SoundType = 0;
+static inline int SampleType = 1;  /* Non-zero = audio system available */
+static inline int SoundType = 1;
 #define SAMPLE_NONE -1
 static inline int Play_Sample(void const *sample, int pri=0, int vol=0xFF, signed short pan=0) { (void)sample;(void)pri;(void)vol;(void)pan; return -1; }
 static inline int Is_Sample_Playing(void const *sample) { (void)sample; return 0; }
