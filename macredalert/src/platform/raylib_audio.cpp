@@ -125,28 +125,43 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
 
     if (!name) return -1;
 
-    /* Audio device should already be initialized in entry_point.cpp */
     g_audio_initialized = true;
 
-    /* Stop any currently playing music */
-    if (g_music_playing) {
-        StopMusicStream(g_current_music);
-        UnloadMusicStream(g_current_music);
-        g_music_playing = false;
+    /* Stop any currently playing */
+    static Sound g_sound = {0};
+    static bool sound_loaded = false;
+    if (sound_loaded) {
+        StopSound(g_sound);
+        UnloadSound(g_sound);
+        sound_loaded = false;
     }
 
-    /* Open the AUD file via the game's file system */
+    /* Try to load pre-decoded WAV file directly */
+    CCFileClass wavfile("menu_music.wav");
+    if (wavfile.Is_Available()) {
+        ra_log("[AUDIO] Loading pre-decoded menu_music.wav\n");
+        Wave wave = LoadWave("menu_music.wav");
+        if (wave.frameCount > 0) {
+            g_sound = LoadSoundFromWave(wave);
+            UnloadWave(wave);
+            SetSoundVolume(g_sound, 1.0f);
+            PlaySound(g_sound);
+            sound_loaded = true;
+            ra_log("[AUDIO] Playing menu_music.wav! %d frames, %.1fs\n",
+                   g_sound.frameCount, (float)g_sound.frameCount / 22050);
+            return 1;
+        }
+    }
+
+    ra_log("[AUDIO] menu_music.wav not available, trying AUD decode\n");
+
+    /* Fallback: decode AUD file */
     const char *actual_name = name;
     CCFileClass file(name);
     if (!file.Is_Available()) {
-        /* Fallback: try THEME0.AUD (extracted from scores.mix) */
-        ra_log("[AUDIO] '%s' not in MIX, trying THEME0.AUD\n", name);
         actual_name = "THEME0.AUD";
         file.Set_Name(actual_name);
-        if (!file.Is_Available()) {
-            ra_log("[AUDIO] No fallback available\n");
-            return -1;
-        }
+        if (!file.Is_Available()) return -1;
     }
 
     int file_size = file.Size();
@@ -217,58 +232,54 @@ int File_Stream_Sample_Vol(char const *name, int volume, int loop) {
         return -1;
     }
 
-    /* Save as WAV in temp file for Raylib to load */
-    char wav_path[256];
-    snprintf(wav_path, sizeof(wav_path), "/tmp/ra_theme_%s.wav", name);
+    /* Save as WAV then load as Raylib Sound */
+    {
+        char wav_path[256];
+        snprintf(wav_path, sizeof(wav_path), "/tmp/ra_music.wav");
 
-    /* Write WAV file */
-    FILE *wav = fopen(wav_path, "wb");
-    if (wav) {
-        int data_size = pcm_offset * 2; /* 16-bit = 2 bytes per sample */
-        int channels = 1;
-        int bits = 16;
+        FILE *wav = fopen(wav_path, "wb");
+        if (!wav) { delete[] pcm; delete[] data; return -1; }
 
+        int data_size = pcm_offset * 2;
         /* RIFF header */
         fwrite("RIFF", 1, 4, wav);
-        int riff_size = 36 + data_size;
-        fwrite(&riff_size, 4, 1, wav);
+        int riff_size = 36 + data_size; fwrite(&riff_size, 4, 1, wav);
         fwrite("WAVE", 1, 4, wav);
-
-        /* fmt chunk */
+        /* fmt */
         fwrite("fmt ", 1, 4, wav);
-        int fmt_size = 16;
-        fwrite(&fmt_size, 4, 1, wav);
-        short audio_fmt = 1; /* PCM */
-        fwrite(&audio_fmt, 2, 1, wav);
-        short num_channels = channels;
-        fwrite(&num_channels, 2, 1, wav);
-        int sample_rate = aud_rate;
-        fwrite(&sample_rate, 4, 1, wav);
-        int byte_rate = sample_rate * channels * bits / 8;
-        fwrite(&byte_rate, 4, 1, wav);
-        short block_align = channels * bits / 8;
-        fwrite(&block_align, 2, 1, wav);
-        short bits_per_sample = bits;
-        fwrite(&bits_per_sample, 2, 1, wav);
-
-        /* data chunk */
+        int fmt_size = 16; fwrite(&fmt_size, 4, 1, wav);
+        short audio_fmt = 1; fwrite(&audio_fmt, 2, 1, wav);
+        short num_ch = 1; fwrite(&num_ch, 2, 1, wav);
+        int sr = (int)aud_rate; fwrite(&sr, 4, 1, wav);
+        int br = sr * 2; fwrite(&br, 4, 1, wav);
+        short ba = 2; fwrite(&ba, 2, 1, wav);
+        short bps = 16; fwrite(&bps, 2, 1, wav);
+        /* data */
         fwrite("data", 1, 4, wav);
         fwrite(&data_size, 4, 1, wav);
         fwrite(pcm, 2, pcm_offset, wav);
-
         fclose(wav);
-        ra_log("[AUDIO] Saved WAV: %s (%d bytes)\n", wav_path, 44 + data_size);
 
-        /* Load and play via Raylib */
-        g_current_music = LoadMusicStream(wav_path);
-        if (g_current_music.frameCount > 0) {
-            g_current_music.looping = (loop != 0);
-            SetMasterVolume(1.0f);
-            SetMusicVolume(g_current_music, 1.0f);
-            PlayMusicStream(g_current_music);
-            g_music_playing = true;
-            ra_log("[AUDIO] Playing music! Duration: %.1fs\n",
-                   GetMusicTimeLength(g_current_music));
+        ra_log("[AUDIO] Saved WAV: %s (%d bytes, %.1fs)\n",
+               wav_path, 44 + data_size, (float)pcm_offset / aud_rate);
+
+        /* Load as Sound (fully buffered, no streaming issues) */
+        static Sound g_sound = {0};
+        static bool sound_loaded = false;
+        if (sound_loaded) {
+            StopSound(g_sound);
+            UnloadSound(g_sound);
+        }
+
+        Wave wave = LoadWave(wav_path);
+        if (wave.frameCount > 0) {
+            g_sound = LoadSoundFromWave(wave);
+            UnloadWave(wave);
+            SetSoundVolume(g_sound, 1.0f);
+            PlaySound(g_sound);
+            sound_loaded = true;
+            g_music_playing = false;
+            ra_log("[AUDIO] Playing! %d frames\n", g_sound.frameCount);
         } else {
             ra_log("[AUDIO] Failed to load WAV\n");
         }

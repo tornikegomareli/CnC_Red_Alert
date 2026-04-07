@@ -85,11 +85,22 @@ extern "C" {
  * Polls all Raylib input and feeds it to the game.
  */
 void Raylib_Poll_Input(WWKeyboardClass *kbd) {
-    /* PollInputEvents processes OS events and must be called regularly.
-     * After polling, check for new input and inject into game's buffer.
-     * Use a flag to only inject mouse events once per poll cycle. */
+    /* Throttle polling to ~60Hz to prevent spinning cursor and CPU waste.
+     * The game calls Fill_Buffer_From_System thousands of times per second
+     * but we only need to poll OS events ~60 times per second. */
+    static double last_poll = 0;
     static bool last_left_down = false;
     static bool last_right_down = false;
+
+    double now = GetTime();
+    double elapsed = now - last_poll;
+    if (elapsed < 0.016) {
+        /* Sleep for remaining time to hit ~60Hz, yielding CPU fully */
+        int sleep_us = (int)((0.016 - elapsed) * 1000000);
+        if (sleep_us > 0) usleep(sleep_us);
+        return;
+    }
+    last_poll = now;
 
     PollInputEvents();
 
